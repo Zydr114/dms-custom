@@ -3,6 +3,38 @@ import test from "node:test";
 import { loadScript } from "./qml-script.mjs";
 
 const surface = loadScript(new URL("../Common/SurfaceStyle.js", import.meta.url));
+const plain = value => JSON.parse(JSON.stringify(value));
+
+test("material profiles normalize independently and keep explicit zero and false", () => {
+    const profiles = surface.normalizeProfiles({
+        bar: { opacity: 0, blur: false, highlight: 0, foregroundOpacity: 0 },
+        island: { opacity: 2, blur: true, highlight: 1, foregroundOpacity: -1 },
+        settings: { opacity: "0.5", blur: "on", highlight: NaN },
+        popup: null
+    });
+    assert.deepEqual(plain(profiles.bar), { opacity: 0, blur: false, highlight: 0, foregroundOpacity: 0 });
+    assert.deepEqual(plain(profiles.island), { opacity: 1, blur: true, highlight: 0.4, foregroundOpacity: 0 });
+    assert.deepEqual(plain(profiles.settings), { opacity: 1, blur: false, highlight: 0.12, foregroundOpacity: 1 });
+    assert.deepEqual(plain(surface.profile(profiles, "unknown")), plain(profiles.popup));
+    assert.equal(surface.anyBlur(profiles), true);
+    assert.equal(surface.anyBlur({ bar: { blur: "on" } }), false);
+    const first = surface.defaults();
+    first.bar.opacity = 0;
+    assert.equal(first.island.opacity, 1);
+    assert.equal(surface.defaults().bar.opacity, 1);
+});
+
+test("each category can independently request blur", () => {
+    for (const kind of ["bar", "island", "settings", "popup"]) {
+        const profiles = surface.defaults();
+        profiles[kind].blur = true;
+        assert.equal(surface.anyBlur(profiles), true, kind);
+        for (const other of ["bar", "island", "settings", "popup"])
+            assert.equal(surface.profile(profiles, other).blur, kind === other);
+        profiles[kind].blur = false;
+        assert.equal(surface.anyBlur(profiles), false, kind);
+    }
+});
 
 test("opacity inherits only when unset and keeps transparent and opaque overrides", () => {
     for (const inherited of [0, 0.35, 1]) {

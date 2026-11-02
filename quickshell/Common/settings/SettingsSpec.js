@@ -3,6 +3,7 @@
 .import "../../DCommon/Common/settings/SpecUtil.js" as Util
 .import "DockConfig.js" as DockConfig
 .import "ClockStyle.js" as ClockStyle
+.import "../SurfaceStyle.js" as SurfaceStyle
 
 function lockWidgetDefaults() {
     return Shared.lockWidgetDefaults();
@@ -21,6 +22,13 @@ function greeterWidgetDefaults() {
 }
 
 var LOCAL_SPEC = {
+    surfaceProfiles: {
+        def: SurfaceStyle.defaults(),
+        coerce: SurfaceStyle.normalizeProfiles
+    },
+    surfaceMaterialBackup: {
+        def: {}
+    },
     dockConfigs: {
         def: [DockConfig.create("dock", "Dock")]
     },

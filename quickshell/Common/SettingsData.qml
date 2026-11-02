@@ -13,6 +13,7 @@ import qs.Services
 import "GSettings.js" as GSettings
 import "LayoutResolver.js" as LayoutResolver
 import "NotificationRuleExpiry.js" as RuleExpiry
+import "SurfaceStyle.js" as SurfaceStyle
 import "settings/SettingsSpec.js" as Spec
 import "settings/SettingsStore.js" as Store
 import "../DCommon/Common/settings/SpecUtil.js" as SpecUtil
@@ -24,7 +25,7 @@ Singleton {
     id: root
     readonly property var log: Log.scoped("SettingsData")
 
-    readonly property int settingsConfigVersion: 42
+    readonly property int settingsConfigVersion: 43
 
     enum Position {
         Top,
@@ -173,6 +174,9 @@ Singleton {
     property string matugenSpec: Spec.SPEC.matugenSpec.def
     property bool runUserMatugenTemplates: Spec.SPEC.runUserMatugenTemplates.def
     property string matugenTargetMonitor: Spec.SPEC.matugenTargetMonitor.def
+    property var surfaceProfiles: SurfaceStyle.defaults()
+    onSurfaceProfilesChanged: saveSettings()
+    property var surfaceMaterialBackup: ({})
     property real popupTransparency: Spec.SPEC.popupTransparency.def
     property bool floatingWindowSyncGlobal: Spec.SPEC.floatingWindowSyncGlobal.def
     property bool floatingWindowTitleBars: Spec.SPEC.floatingWindowTitleBars.def
@@ -426,7 +430,7 @@ Singleton {
     }
 
     readonly property var frameBarConfig: barConfigs.find(bc => bc.enabled !== false && !isIslandBarConfig(bc)) ?? null
-    readonly property real frameSurfaceOpacity: barTransparency(frameBarConfig)
+    readonly property real frameSurfaceOpacity: SurfaceStyle.profile(surfaceProfiles, "bar").opacity
     readonly property color frameSurfaceBase: barSurfaceColor(frameBarConfig)
 
     property string systemTrayIconTintMode: Spec.SPEC.systemTrayIconTintMode.def
@@ -968,9 +972,7 @@ Singleton {
     }
 
     function islandSatelliteTransparency(bc) {
-        if (islandSetting(bc, "islandSatelliteFollowInterfaceStyle"))
-            return barTransparency(bc);
-        return islandSetting(bc, "islandSatelliteTransparency");
+        return SurfaceStyle.profile(surfaceProfiles, "island").opacity;
     }
 
     function islandLevelDisplay(bc, key) {
@@ -1749,6 +1751,8 @@ Singleton {
             value = Shape.normalizeStrength(value);
         if (key === "clockStyle")
             value = ClockStyle.normalize(value);
+        if (key === "surfaceProfiles")
+            value = SurfaceStyle.normalizeProfiles(value);
         Spec.set(root, key, value, saveSettings, _hooks);
         if (key === "frameEnabled" && value)
             clearIslandBars();
@@ -1756,6 +1760,30 @@ Singleton {
 
     function hasSetting(key) {
         return key in Spec.SPEC;
+    }
+
+    function setSurfaceProfile(kind, patch) {
+        const key = ["bar", "island", "settings", "popup"].includes(kind) ? kind : "popup";
+        const profiles = SurfaceStyle.normalizeProfiles(surfaceProfiles);
+        profiles[key] = Object.assign({}, profiles[key], patch && typeof patch === "object" && !Array.isArray(patch) ? patch : {});
+        set("surfaceProfiles", profiles);
+    }
+
+    function applySurfaceProfileToAll(kind) {
+        const selected = SurfaceStyle.profile(surfaceProfiles, kind);
+        set("surfaceProfiles", {
+            bar: selected,
+            island: selected,
+            settings: selected,
+            popup: selected
+        });
+    }
+
+    function resetSurfaceProfile(kind) {
+        const key = ["bar", "island", "settings", "popup"].includes(kind) ? kind : "popup";
+        const profiles = SurfaceStyle.normalizeProfiles(surfaceProfiles);
+        profiles[key] = SurfaceStyle.defaults()[key];
+        set("surfaceProfiles", profiles);
     }
 
     function setClockStyleValue(path, value, persist) {
@@ -2455,15 +2483,11 @@ Singleton {
     }
 
     function barTransparency(config) {
-        if (config?.followInterfaceStyle !== false)
-            return popupTransparency;
-        return config?.transparency ?? 1.0;
+        return SurfaceStyle.profile(surfaceProfiles, isIslandBarConfig(config) ? "island" : "bar").opacity;
     }
 
     function barWidgetTransparency(config) {
-        if (config?.widgetFollowInterfaceStyle !== false)
-            return Theme.foregroundAlpha;
-        return config?.widgetTransparency ?? 1.0;
+        return SurfaceStyle.profile(surfaceProfiles, "bar").foregroundOpacity;
     }
 
     function barSurfaceColor(config) {

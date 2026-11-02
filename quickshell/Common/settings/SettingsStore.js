@@ -5,6 +5,7 @@
 .import "./BarWidgetDefaults.js" as WidgetDefaults
 .import "./DockConfig.js" as DockConfig
 .import "../GridLayout.js" as GridLayout
+.import "../SurfaceStyle.js" as SurfaceStyle
 
 var PIN_KEYS = ["brightnessDevicePins", "wifiNetworkPins", "bluetoothDevicePins", "audioInputDevicePins", "audioOutputDevicePins"];
 
@@ -216,6 +217,8 @@ function toJson(root, setKeys) {
         if (k === "pluginSettings")
             continue;
         var value = root[k];
+        if (k === "surfaceProfiles")
+            value = SurfaceStyle.normalizeProfiles(value);
         if (k === "desktopWidgetInstances")
             value = withoutInstancePositions(value);
         if (k === "builtInPluginSettings")
@@ -234,6 +237,7 @@ function migrateToVersion(obj, targetVersion) {
 
     var settings = JSON.parse(JSON.stringify(obj));
     var currentVersion = settings.configVersion || 0;
+    const materialBackup = currentVersion < 43 && targetVersion >= 43 ? snapshotSurfaceMaterial(settings) : null;
 
     if (currentVersion >= targetVersion) {
         return null;
@@ -752,7 +756,70 @@ function migrateToVersion(obj, targetVersion) {
         settings.configVersion = 42;
     }
 
+    if (currentVersion < 43 && targetVersion >= 43) {
+        migrateSurfaceMaterial(settings, materialBackup);
+        settings.configVersion = 43;
+    }
+
     return settings;
+}
+
+function snapshotSurfaceMaterial(settings) {
+    const backup = {};
+    for (const key of ["surfaceProfiles", "popupTransparency", "blurEnabled", "blurStrength", "blurForegroundLayers", "foregroundLayerTransparency", "blurLayerOutlineOpacity", "blurBorderEnabled", "blurBorderColor", "blurBorderCustomColor", "blurBorderOpacity", "notificationForegroundLayers", "floatingWindowSyncGlobal", "floatingWindowTransparency", "floatingWindowForegroundLayers", "floatingWindowForegroundTransparency", "barConfigs", "dockConfigs", "dockTransparency", "dockFollowInterfaceStyle", "dankBarTransparency", "dankBarWidgetTransparency", "dankIslandTransparency", "dankIslandSatelliteTransparency", "frameEnabled", "frameMode", "frameOpacity", "frameBlurEnabled", "notepadTransparencyOverride", "notepadLastCustomTransparency"]) {
+        if (Object.prototype.hasOwnProperty.call(settings, key))
+            backup[key] = settings[key];
+    }
+    return JSON.parse(JSON.stringify(backup));
+}
+
+function legacyOpacity(value, fallback) {
+    if (typeof value !== "number" || !Number.isFinite(value))
+        return fallback;
+    return SurfaceStyle.opacity(Util.percentToUnit(value), fallback);
+}
+
+function migrateSurfaceMaterial(settings, backup) {
+    if (!settings.surfaceMaterialBackup || typeof settings.surfaceMaterialBackup !== "object" || Array.isArray(settings.surfaceMaterialBackup) || Object.keys(settings.surfaceMaterialBackup).length === 0)
+        settings.surfaceMaterialBackup = backup;
+
+    const blur = settings.blurEnabled === true;
+    const popupOpacity = legacyOpacity(settings.popupTransparency, 1);
+    const globalForeground = blur && settings.blurForegroundLayers === false ? 0 : legacyOpacity(settings.foregroundLayerTransparency, 1);
+    const synced = settings.floatingWindowSyncGlobal !== false;
+    const settingsForeground = synced ? (settings.blurForegroundLayers === false ? 0 : legacyOpacity(settings.foregroundLayerTransparency, 1)) : (settings.floatingWindowForegroundLayers === false ? 0 : legacyOpacity(settings.floatingWindowForegroundTransparency, 1));
+    const bars = Array.isArray(settings.barConfigs) ? settings.barConfigs.filter(b => b && typeof b === "object" && b.enabled !== false) : [];
+    const ordinary = bars.filter(b => b.island !== true && b.dot !== true);
+    const bar = ordinary.find(b => b.id === "default") || ordinary[0] || bars[0];
+    const island = bars.find(b => b.island === true || b.dot === true) || bars.find(b => ["leftWidgets", "centerWidgets", "rightWidgets"].some(key => Array.isArray(b[key]) && b[key].some(entry => entry === "island" || (entry && (entry.id === "island" || entry.widgetId === "island") && entry.enabled !== false)))) || bar;
+    function fromBar(config) {
+        return {
+            opacity: config?.followInterfaceStyle === false ? legacyOpacity(config.transparency, 1) : popupOpacity,
+            blur: SurfaceStyle.blurRequested(config?.blur, blur),
+            foregroundOpacity: config?.widgetFollowInterfaceStyle === false ? legacyOpacity(config.widgetTransparency, 1) : globalForeground
+        };
+    }
+    const profiles = SurfaceStyle.normalizeProfiles({
+        popup: { opacity: popupOpacity, blur, foregroundOpacity: globalForeground },
+        settings: { opacity: synced ? popupOpacity : legacyOpacity(settings.floatingWindowTransparency, 1), blur, foregroundOpacity: settingsForeground },
+        bar: fromBar(bar),
+        island: fromBar(island)
+    });
+    const supplied = backup?.surfaceProfiles;
+    if (supplied && typeof supplied === "object" && !Array.isArray(supplied)) {
+        for (const kind of ["bar", "island", "settings", "popup"]) {
+            const entry = supplied[kind];
+            if (!entry || typeof entry !== "object" || Array.isArray(entry))
+                continue;
+            for (const key of ["opacity", "highlight", "foregroundOpacity"]) {
+                if (typeof entry[key] === "number" && Number.isFinite(entry[key]))
+                    profiles[kind][key] = entry[key];
+            }
+            if (typeof entry.blur === "boolean")
+                profiles[kind].blur = entry.blur;
+        }
+    }
+    settings.surfaceProfiles = SurfaceStyle.normalizeProfiles(profiles);
 }
 
 // v42: dock apps follow the dock's icon size and magnification instead of their own copies
