@@ -13,6 +13,7 @@ Item {
     LayoutMirroring.enabled: I18n.isRtl
     LayoutMirroring.childrenInherit: true
 
+    property var parentModal: null
     readonly property var paletteValues: ["default", "bright", "dim"]
 
     readonly property IslandSettingsStore dot: IslandSettingsStore {
@@ -238,21 +239,11 @@ Item {
                 onCustomColorSelected: selectedColor => dot.apply("surfaceCustomColor", selectedColor.toString())
             }
 
-            SettingsSliderRow {
-                settingKey: "dotOpacity"
-                tags: ["dot", "opacity", "transparency", "background"]
-                resetStore: dot
-                resetKeys: ["transparency"]
-                text: I18n.tr("Opacity")
-                enabled: !root.highContrast
-                minimum: 0
-                maximum: 100
-                step: 1
-                value: Math.round(SettingsData.barTransparency(dot.config) * 100)
-                onSliderDragFinished: finalValue => SettingsData.updateBarConfig(dot.config.id, {
-                        followInterfaceStyle: false,
-                        transparency: finalValue / 100
-                    })
+            SettingsControlledBy {
+                target: "surfaces"
+                parentModal: root.parentModal
+                section: "surfaceMaterial_island"
+                settingLabel: I18n.tr("Surface material")
             }
 
             SettingsButtonGroupRow {

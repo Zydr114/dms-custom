@@ -10,8 +10,6 @@ Item {
     LayoutMirroring.enabled: I18n.isRtl
     LayoutMirroring.childrenInherit: true
 
-    Component.onCompleted: BlurService.probe()
-
     property var parentModal: null
     readonly property bool widgetBackgroundEnabled: !(bar.selectedBarConfig?.noBackground ?? false)
     readonly property var outlineColors: ["surfaceText", "secondary", "primary"]
@@ -23,7 +21,6 @@ Item {
     readonly property bool selectedIslandNotch: bar.selectedBarIsIsland && !root.selectedIslandFree && bar.islandSetting("islandNotch")
     readonly property int frameInsetPaddingDisplay: Math.round(SettingsData.frameBarContentGap)
     readonly property var frameBar: SettingsData.frameBarConfig
-    readonly property bool frameBarOverridden: frameBar?.followInterfaceStyle === false
 
     function updateFrameBar(updates) {
         if (!frameBar)
@@ -95,25 +92,6 @@ Item {
                 onSliderDragFinished: v => SettingsData.set("frameBarInsetPadding", v)
             }
 
-            SettingsToggleRow {
-                id: frameBlurToggle
-                settingKey: "frameBlurEnabled"
-                tags: ["frame", "blur", "background", "glass", "transparency", "frosted"]
-                text: I18n.tr("Blur")
-                checked: SettingsData.frameBlurEnabled
-                onToggled: checked => SettingsData.set("frameBlurEnabled", checked)
-                enabled: BlurService.available && SettingsData.blurEnabled
-                visible: BlurService.available
-            }
-
-            SettingsControlledBy {
-                visible: BlurService.available && !SettingsData.blurEnabled
-                target: "surfaces"
-                parentModal: root.parentModal
-                section: "blurEnabled"
-                settingLabel: I18n.tr("Background blur")
-            }
-
             SurfaceColorRow {
                 settingKey: "frameSurfaceColor"
                 tags: ["frame", "background", "color", "surface"]
@@ -137,31 +115,11 @@ Item {
                     })
             }
 
-            SettingsToggleSliderRow {
-                settingKey: "frameSurfaceOpacity"
-                tags: ["frame", "opacity", "transparency", "override", "interface", "style"]
-                visible: !!root.frameBar
-                text: I18n.tr("Opacity")
-                description: I18n.tr("Override")
-                checked: root.frameBarOverridden
-                value: Math.round((root.frameBar?.transparency ?? 1) * 100)
-                minimum: 0
-                maximum: 100
-                modified: root.frameBarOverridden
-                valueModified: (root.frameBar?.transparency ?? 1) !== 1
-                onResetRequested: root.updateFrameBar({
-                    followInterfaceStyle: true,
-                    transparency: 1
-                })
-                onValueResetRequested: root.updateFrameBar({
-                    transparency: 1
-                })
-                onToggled: checked => root.updateFrameBar({
-                        followInterfaceStyle: !checked
-                    })
-                onSliderDragFinished: finalValue => root.updateFrameBar({
-                        transparency: finalValue / 100
-                    })
+            SettingsControlledBy {
+                target: "surfaces"
+                parentModal: root.parentModal
+                section: "surfaceMaterial_bar"
+                settingLabel: I18n.tr("Surface material")
             }
         }
 
@@ -172,13 +130,14 @@ Item {
             tags: ["background", "opacity", "corners", "rounded", "goth", "shadow", "palette", "contrast"]
             visible: (bar.selectedBarConfig?.enabled ?? false) && !bar.selectedBarFrameStyled
 
-            SettingsDropdownRow {
-                settingKey: "barBlur"
-                tags: ["blur", "background", "glass", "frosted", "capsule", "group"]
-                text: I18n.tr("Background blur")
-                options: [I18n.tr("Default"), I18n.tr("On"), I18n.tr("Off")]
-                currentValue: bar.selectedBarConfig?.blur === "on" ? options[1] : bar.selectedBarConfig?.blur === "off" ? options[2] : options[0]
-                onValueChanged: value => bar.apply("blur", value === options[1] ? "on" : value === options[2] ? "off" : "inherit")
+            SettingsToggleRow {
+                settingKey: "barMaterialBackgroundEnabled"
+                tags: ["bar", "background", "material", "capsule", "group"]
+                visible: !bar.selectedBarIsIsland
+                text: I18n.tr("Bar background")
+                description: I18n.tr("When off, groups and capsules use their own material backgrounds")
+                checked: bar.selectedBarConfig?.materialBackgroundEnabled !== false
+                onToggled: checked => bar.apply("materialBackgroundEnabled", checked)
             }
 
             SettingsButtonGroupRow {
@@ -219,11 +178,10 @@ Item {
             }
 
             SettingsControlledBy {
-                visible: !bar.islandOwnsSelectedBarTop
                 target: "surfaces"
                 parentModal: root.parentModal
-                section: "surfaceOpacity_bar_" + bar.selectedBarId
-                settingLabel: I18n.tr("Opacity")
+                section: bar.selectedBarIsIsland ? "surfaceMaterial_island" : "surfaceMaterial_bar"
+                settingLabel: I18n.tr("Surface material")
             }
 
             SettingsButtonGroupRow {
@@ -601,24 +559,6 @@ Item {
                 onSliderDragFinished: finalValue => bar.apply("gothCornerRadiusValue", finalValue)
             }
 
-            SettingsToggleSliderRow {
-                resetStore: bar
-                settingKey: "islandSatelliteTransparency"
-                tags: ["island", "satellite", "background", "opacity", "transparency", "blur", "override", "interface", "style"]
-                valueKeys: ["islandSatelliteTransparency"]
-                text: I18n.tr("Override", "verb, toggle to override the global setting for this item")
-                description: I18n.tr("Opacity", "island settings: satellite background opacity slider")
-                checked: !bar.islandSetting("islandSatelliteFollowInterfaceStyle")
-                minimum: 0
-                maximum: 100
-                step: 1
-                value: Math.round(SettingsData.islandSatelliteTransparency(bar.selectedBarConfig) * 100)
-                visible: bar.islandSetting("islandSatellitesEnabled")
-                enabled: bar.islandSetting("islandSatelliteBackground")
-                onToggled: checked => bar.apply("islandSatelliteFollowInterfaceStyle", !checked)
-                onSliderValueChanged: value => bar.apply("islandSatelliteTransparency", value / 100)
-            }
-
             SettingsSliderRow {
                 settingKey: "islandSatelliteGap"
                 tags: ["island", "satellite", "widgets", "gap", "spacing"]
@@ -681,25 +621,6 @@ Item {
                 checked: !(bar.selectedBarConfig?.noBackground ?? false)
                 onToggled: checked => SettingsData.updateBarConfig(bar.selectedBarId, {
                         noBackground: !checked
-                    })
-            }
-
-            SettingsToggleSliderRow {
-                resetStore: bar
-                text: I18n.tr("Override", "verb, toggle to override the global setting for this item")
-                description: I18n.tr("Opacity")
-                tags: ["widget", "opacity", "transparency", "override", "foreground", "interface", "style"]
-                enabled: root.widgetBackgroundEnabled
-                valueKeys: ["widgetTransparency"]
-                checked: bar.selectedBarConfig?.widgetFollowInterfaceStyle === false
-                value: Math.round(SettingsData.barWidgetTransparency(bar.selectedBarConfig) * 100)
-                minimum: 0
-                maximum: 100
-                onToggled: checked => SettingsData.updateBarConfig(bar.selectedBarId, {
-                        widgetFollowInterfaceStyle: !checked
-                    })
-                onSliderDragFinished: finalValue => SettingsData.updateBarConfig(bar.selectedBarId, {
-                        widgetTransparency: finalValue / 100
                     })
             }
 

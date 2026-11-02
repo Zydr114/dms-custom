@@ -235,27 +235,6 @@
     "page": "notifications"
   },
   {
-    "section": "blurEnabled",
-    "label": "Background blur",
-    "tabIndex": -1,
-    "category": "Interface style",
-    "keywords": [
-      "background",
-      "blur",
-      "frosted",
-      "glass",
-      "interface",
-      "passes",
-      "radius",
-      "reach",
-      "size",
-      "strength",
-      "style",
-      "transparency"
-    ],
-    "page": "theme_surfaces"
-  },
-  {
     "section": "wallpaperBackgroundColorMode",
     "label": "Background color",
     "tabIndex": -1,
@@ -343,6 +322,32 @@
     ],
     "page": "dankbar",
     "icon": "dashboard"
+  },
+  {
+    "section": "surfaceMaterial_bar",
+    "label": "Bars and docks",
+    "tabIndex": -1,
+    "category": "Interface style",
+    "keywords": [
+      "bar",
+      "bars",
+      "blur",
+      "dock",
+      "docks",
+      "frame",
+      "highlight",
+      "interface",
+      "material",
+      "opacity",
+      "panel",
+      "statusbar",
+      "style",
+      "surface",
+      "taskbar",
+      "topbar"
+    ],
+    "page": "theme_surfaces",
+    "description": "Bars, docks and frame"
   },
   {
     "section": "blurredWallpaperLayer",
@@ -1098,72 +1103,6 @@
     "page": "notifications"
   },
   {
-    "section": "blurForegroundLayers",
-    "label": "Foreground layers",
-    "tabIndex": -1,
-    "category": "Interface style",
-    "keywords": [
-      "blur",
-      "cards",
-      "contrast",
-      "foreground",
-      "frosted",
-      "glass",
-      "interface",
-      "layers",
-      "opacity",
-      "style",
-      "surface",
-      "transparency"
-    ],
-    "page": "theme_surfaces"
-  },
-  {
-    "section": "floatingWindowForegroundLayers",
-    "label": "Foreground layers",
-    "tabIndex": -1,
-    "category": "Interface style",
-    "keywords": [
-      "blur",
-      "cards",
-      "contrast",
-      "floating",
-      "foreground",
-      "glass",
-      "interface",
-      "layers",
-      "opacity",
-      "style",
-      "transparency",
-      "window"
-    ],
-    "page": "theme_surfaces"
-  },
-  {
-    "section": "notificationForegroundLayers",
-    "label": "Foreground layers",
-    "tabIndex": -1,
-    "category": "Notifications",
-    "keywords": [
-      "alert",
-      "alerts",
-      "blur",
-      "cards",
-      "contrast",
-      "foreground",
-      "glass",
-      "layers",
-      "messages",
-      "notif",
-      "notification",
-      "notifications",
-      "notifs",
-      "surface",
-      "toast"
-    ],
-    "page": "notifications"
-  },
-  {
     "section": "cursorHideOnTouch",
     "label": "Hide cursor on touch",
     "tabIndex": -1,
@@ -1403,31 +1342,28 @@
     "description": "Shortcuts, keyboard, mouse"
   },
   {
-    "section": "blurLayerOutline",
-    "label": "Layer outline",
+    "section": "surfaceMaterial_island",
+    "label": "Islands",
     "tabIndex": -1,
     "category": "Interface style",
     "keywords": [
-      "border",
-      "cards",
-      "components",
-      "control center",
-      "edge",
-      "faint",
-      "foreground",
+      "blur",
+      "dot",
+      "free",
+      "highlight",
       "interface",
-      "layer",
-      "layers",
-      "modules",
-      "notifications",
+      "island",
+      "islands",
+      "material",
       "opacity",
-      "outline",
-      "pills",
+      "placement",
+      "satellite",
+      "satellites",
       "style",
-      "widgets"
+      "surface"
     ],
     "page": "theme_surfaces",
-    "description": "Faint edge on cards, pills and widgets"
+    "description": "Islands, satellites and free placement"
   },
   {
     "section": "iconThemeLight",
@@ -1705,41 +1641,6 @@
     "icon": "rule_settings"
   },
   {
-    "section": "floatingWindowTransparency",
-    "label": "Opacity",
-    "tabIndex": -1,
-    "category": "Interface style",
-    "keywords": [
-      "authentication",
-      "floating",
-      "interface",
-      "notepad",
-      "opacity",
-      "polkit",
-      "settings",
-      "style",
-      "transparency",
-      "window"
-    ],
-    "page": "theme_surfaces"
-  },
-  {
-    "section": "popupTransparency",
-    "label": "Opacity",
-    "tabIndex": -1,
-    "category": "Interface style",
-    "keywords": [
-      "interface",
-      "modal",
-      "opacity",
-      "popup",
-      "style",
-      "surface",
-      "transparency"
-    ],
-    "page": "theme_surfaces"
-  },
-  {
     "section": "dmsWindowsFloating",
     "label": "Open floating",
     "tabIndex": -1,
@@ -1784,24 +1685,6 @@
       "toast"
     ],
     "page": "notifications"
-  },
-  {
-    "section": "floatingWindowSyncGlobal",
-    "label": "Override",
-    "tabIndex": -1,
-    "category": "Interface style",
-    "keywords": [
-      "floating",
-      "global",
-      "interface",
-      "opacity",
-      "override",
-      "style",
-      "surface",
-      "sync",
-      "window"
-    ],
-    "page": "theme_surfaces"
   },
   {
     "section": "windowRadius",
@@ -1911,6 +1794,41 @@
     ],
     "page": "notifications",
     "icon": "notifications"
+  },
+  {
+    "section": "surfaceMaterial_popup",
+    "label": "Popups",
+    "tabIndex": -1,
+    "category": "Interface style",
+    "keywords": [
+      "alert",
+      "alerts",
+      "app drawer",
+      "app menu",
+      "applications",
+      "blur",
+      "center",
+      "control",
+      "control center",
+      "dash",
+      "highlight",
+      "interface",
+      "launcher",
+      "material",
+      "notif",
+      "notification",
+      "notifications",
+      "notifs",
+      "opacity",
+      "osd",
+      "popup",
+      "popups",
+      "start menu",
+      "style",
+      "surface"
+    ],
+    "page": "theme_surfaces",
+    "description": "Dash, control center, launcher, notifications and OSD"
   },
   {
     "section": "notificationPopupPosition",
@@ -2204,6 +2122,28 @@
     "page": "personalization"
   },
   {
+    "section": "surfaceMaterial_settings",
+    "label": "Settings windows",
+    "tabIndex": -1,
+    "category": "Interface style",
+    "keywords": [
+      "blur",
+      "floating",
+      "highlight",
+      "interface",
+      "material",
+      "native",
+      "opacity",
+      "settings",
+      "style",
+      "surface",
+      "window",
+      "windows"
+    ],
+    "page": "theme_surfaces",
+    "description": "Settings and native floating windows"
+  },
+  {
     "section": "m3ElevationLink",
     "label": "Shadows",
     "tabIndex": -1,
@@ -2219,6 +2159,32 @@
       "style"
     ],
     "page": "theme_surfaces"
+  },
+  {
+    "section": "blurStrength",
+    "label": "Shared blur strength",
+    "tabIndex": -1,
+    "category": "Interface style",
+    "keywords": [
+      "applies",
+      "background",
+      "blur",
+      "categories",
+      "frosted",
+      "glass",
+      "interface",
+      "passes",
+      "radius",
+      "reach",
+      "shared",
+      "size",
+      "strength",
+      "style",
+      "surface",
+      "transparency"
+    ],
+    "page": "theme_surfaces",
+    "description": "Applies to all surface categories"
   },
   {
     "section": "cursorSize",
@@ -5179,25 +5145,28 @@
     "parentLabel": "Bar"
   },
   {
-    "section": "barBlur",
-    "label": "Background blur",
+    "section": "barMaterialBackgroundEnabled",
+    "label": "Bar background",
     "tabIndex": 6,
     "category": "Appearance",
     "keywords": [
       "appearance",
       "background",
+      "backgrounds",
       "bar",
-      "blur",
       "capsule",
-      "frosted",
-      "glass",
+      "capsules",
       "group",
+      "groups",
+      "material",
       "panel",
       "statusbar",
       "taskbar",
+      "their",
       "topbar"
     ],
-    "parentLabel": "Bar"
+    "parentLabel": "Bar",
+    "description": "When off, groups and capsules use their own material backgrounds"
   },
   {
     "section": "frameBarInsetPadding",
@@ -5278,28 +5247,6 @@
     "icon": "palette",
     "parentLabel": "Bar",
     "description": "Background, corners, spacing, widget style"
-  },
-  {
-    "section": "frameBlurEnabled",
-    "label": "Blur",
-    "tabIndex": 6,
-    "category": "Appearance",
-    "keywords": [
-      "appearance",
-      "background",
-      "bar",
-      "blur",
-      "frame",
-      "frosted",
-      "glass",
-      "panel",
-      "statusbar",
-      "taskbar",
-      "topbar",
-      "transparency"
-    ],
-    "parentLabel": "Bar",
-    "conditionKey": "frameEnabled"
   },
   {
     "section": "barBorder",
@@ -5763,55 +5710,6 @@
     "parentLabel": "Bar"
   },
   {
-    "section": "frameSurfaceOpacity",
-    "label": "Opacity",
-    "tabIndex": 6,
-    "category": "Appearance",
-    "keywords": [
-      "appearance",
-      "bar",
-      "frame",
-      "interface",
-      "opacity",
-      "override",
-      "panel",
-      "statusbar",
-      "style",
-      "taskbar",
-      "topbar",
-      "transparency"
-    ],
-    "parentLabel": "Bar",
-    "description": "Override",
-    "conditionKey": "frameEnabled"
-  },
-  {
-    "section": "islandSatelliteTransparency",
-    "label": "Override",
-    "tabIndex": 6,
-    "category": "Appearance",
-    "keywords": [
-      "appearance",
-      "background",
-      "bar",
-      "blur",
-      "interface",
-      "island",
-      "opacity",
-      "override",
-      "panel",
-      "satellite",
-      "statusbar",
-      "style",
-      "taskbar",
-      "topbar",
-      "transparency"
-    ],
-    "parentLabel": "Bar",
-    "description": "Opacity",
-    "conditionKey": "islandEnabled"
-  },
-  {
     "section": "islandPalette",
     "label": "Palette",
     "tabIndex": 6,
@@ -6239,8 +6137,7 @@
       "widgets"
     ],
     "parentLabel": "Bar",
-    "icon": "widgets",
-    "description": "Opacity"
+    "icon": "widgets"
   },
   {
     "section": "islandCompactThickness",
@@ -18495,25 +18392,6 @@
       "taskbar",
       "topbar",
       "volume"
-    ],
-    "parentLabel": "Bar",
-    "conditionKey": "dotEnabled"
-  },
-  {
-    "section": "dotOpacity",
-    "label": "Opacity",
-    "tabIndex": 65,
-    "category": "Dot",
-    "keywords": [
-      "background",
-      "bar",
-      "dot",
-      "opacity",
-      "panel",
-      "statusbar",
-      "taskbar",
-      "topbar",
-      "transparency"
     ],
     "parentLabel": "Bar",
     "conditionKey": "dotEnabled"

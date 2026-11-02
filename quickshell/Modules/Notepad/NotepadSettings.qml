@@ -92,7 +92,7 @@ Item {
         width: Math.min(360, root.width - Theme.spacingL * 2)
         height: Math.min(settingsColumn.implicitHeight + Theme.spacingXL * 2, root.height - Theme.spacingL * 2)
         radius: Theme.cornerRadius
-        color: Theme.withAlpha(Theme.cardSurface, Theme.notepadTransparency)
+        color: Theme.foregroundColor(Theme.cardSurface, Theme.isFloatingWindow(root))
         border.color: Theme.outlineMedium
         border.width: Theme.layerOutlineWidth
         z: 100
@@ -342,50 +342,12 @@ Item {
                     }
                 }
 
-                Rectangle {
+                StyledText {
                     width: parent.width
-                    height: transparencySliderColumn.height + Theme.spacingS
-                    color: "transparent"
-
-                    Column {
-                        id: transparencySliderColumn
-                        width: parent.width
-                        spacing: Theme.spacingS
-
-                        DToggle {
-                            anchors.left: parent.left
-                            anchors.leftMargin: -Theme.spacingM
-                            width: parent.width + Theme.spacingM
-                            text: I18n.tr("Surface opacity")
-                            description: I18n.tr("Override floating window transparency for Notepad")
-                            checked: SettingsData.notepadTransparencyOverride >= 0
-                            onToggled: checked => {
-                                if (checked) {
-                                    SettingsData.notepadTransparencyOverride = SettingsData.notepadLastCustomTransparency;
-                                } else {
-                                    SettingsData.notepadTransparencyOverride = -1;
-                                }
-                            }
-                        }
-
-                        DSlider {
-                            anchors.left: parent.left
-                            anchors.leftMargin: -Theme.spacingM
-                            width: parent.width + Theme.spacingM
-                            visible: SettingsData.notepadTransparencyOverride >= 0
-                            value: Math.round(Theme.notepadTransparency * 100)
-                            minimum: 0
-                            maximum: 100
-                            unit: ""
-                            showValue: true
-                            wheelEnabled: false
-                            onSliderValueChanged: newValue => {
-                                if (SettingsData.notepadTransparencyOverride >= 0) {
-                                    SettingsData.notepadTransparencyOverride = newValue / 100;
-                                }
-                            }
-                        }
-                    }
+                    text: I18n.tr("Surface opacity is configured in Settings → Interface style")
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: Theme.surfaceTextMedium
+                    wrapMode: Text.WordWrap
                 }
 
                 Rectangle {

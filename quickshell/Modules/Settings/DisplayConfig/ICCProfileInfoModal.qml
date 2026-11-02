@@ -163,7 +163,7 @@ DModal {
                     width: parent.width
                     height: parent.height - 120
                     radius: Theme.cornerRadius
-                    color: Theme.floatingWindowNestedSurface
+                    color: Theme.foregroundColor(Theme.cardSurface, Theme.isFloatingWindow(root))
                     border.color: Theme.outlineMedium
                     border.width: Theme.layerOutlineWidth
                     clip: true

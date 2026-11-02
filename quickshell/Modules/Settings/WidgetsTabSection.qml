@@ -15,6 +15,7 @@ Column {
     Component.onCompleted: DgopService.ensureMeta()
 
     property var items: []
+    property var parentModal: null
     property var allWidgets: []
     property string title: ""
     property string sectionId: ""
@@ -66,7 +67,9 @@ Column {
     property int highlightedIndex: -1
 
     function saveEntries(next) {
-        SettingsData.updateBarConfig(barId, Groups.normalize(barConfig, { [sectionId + "Widgets"]: next }));
+        SettingsData.updateBarConfig(barId, Groups.normalize(barConfig, {
+            [sectionId + "Widgets"]: next
+        }));
     }
 
     function canGroup(index) {
@@ -78,10 +81,22 @@ Column {
             return;
         const groups = Object.assign({}, barConfig?.widgetGroups ?? {});
         const id = Groups.nextId(groups);
-        groups[id] = { name: I18n.tr("Group"), style: "pills", padding: Theme.spacingXS, spacing: Theme.spacingXS, tone: "surface", blur: "inherit", overflowMode: "auto" };
+        groups[id] = {
+            name: I18n.tr("Group"),
+            style: "pills",
+            padding: Theme.spacingXS,
+            spacing: Theme.spacingXS,
+            tone: "surface",
+            blur: "inherit",
+            overflowMode: "auto"
+        };
         const next = entries.slice();
         next[index] = Groups.withGroup(next[index], id);
-        SettingsData.updateBarConfig(barId, Groups.normalize(Object.assign({}, barConfig, { widgetGroups: groups }), { [sectionId + "Widgets"]: next }));
+        SettingsData.updateBarConfig(barId, Groups.normalize(Object.assign({}, barConfig, {
+            widgetGroups: groups
+        }), {
+            [sectionId + "Widgets"]: next
+        }));
         selectedGroup = id;
     }
 
@@ -100,7 +115,9 @@ Column {
     }
 
     function toggleGroup(id) {
-        collapsedGroups = Object.assign({}, collapsedGroups, { [id]: !collapsedGroups[id] });
+        collapsedGroups = Object.assign({}, collapsedGroups, {
+            [id]: !collapsedGroups[id]
+        });
     }
 
     function editGroup(id) {
@@ -247,6 +264,7 @@ Column {
                 sourceComponent: Component {
                     WidgetGroupsEditor {
                         width: nodeRow.width
+                        parentModal: root.parentModal
                         barId: root.barId
                         sectionId: root.sectionId
                         selectedGroup: nodeRow.modelData.groupId

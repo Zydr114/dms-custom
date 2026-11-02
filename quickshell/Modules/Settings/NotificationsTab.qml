@@ -443,12 +443,11 @@ Column {
             }
         }
 
-        SettingsToggleRow {
-            settingKey: "notificationForegroundLayers"
-            tags: ["notification", "foreground", "layers", "surface", "blur", "glass", "contrast", "cards"]
-            text: I18n.tr("Foreground layers")
-            checked: SettingsData.notificationForegroundLayers ?? true
-            onToggled: checked => SettingsData.set("notificationForegroundLayers", checked)
+        SettingsControlledBy {
+            target: "surfaces"
+            parentModal: root.parentModal
+            section: "surfaceMaterial_popup"
+            settingLabel: I18n.tr("Surface material")
         }
 
         SettingsSliderRow {

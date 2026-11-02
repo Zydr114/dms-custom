@@ -281,7 +281,9 @@ Item {
     function setWidgetsForSection(sectionId, widgets) {
         if (sectionId === "center" && dankIslandOwnsSelectedBarCenter)
             return;
-        SettingsData.updateBarConfig(selectedBarId, WidgetGroups.normalize(selectedBarConfig, { [barKey(sectionId)]: widgets }));
+        SettingsData.updateBarConfig(selectedBarId, WidgetGroups.normalize(selectedBarConfig, {
+            [barKey(sectionId)]: widgets
+        }));
     }
 
     function getWidgetsForPopup() {
@@ -421,13 +423,21 @@ Item {
             const section = sectionItem(s);
             for (const node of WidgetGroups.tree(entries)) {
                 if (node.groupId) {
-                    out.push({ "section": s, "id": "@group:" + node.groupId, "index": node.first });
+                    out.push({
+                        "section": s,
+                        "id": "@group:" + node.groupId,
+                        "index": node.first
+                    });
                     if (section?.collapsedGroups[node.groupId])
                         continue;
                 }
                 for (let index = node.first; index < node.end; index++) {
                     const entry = entries[index];
-                    out.push({ "section": s, "id": WidgetGroups.idOf(entry), "index": index });
+                    out.push({
+                        "section": s,
+                        "id": WidgetGroups.idOf(entry),
+                        "index": index
+                    });
                 }
             }
         });
@@ -615,7 +625,15 @@ Item {
             return;
         widgetSelectionPopupLoader.item.targetSection = sectionId;
         widgetSelectionPopupLoader.item.selectingMember = false;
-        widgetSelectionPopupLoader.item.widgets = [{ id: "", groupEntry: true, text: I18n.tr("Group"), description: "", icon: "group_work" }].concat(widgetsTab.getWidgetsForPopup());
+        widgetSelectionPopupLoader.item.widgets = [
+            {
+                id: "",
+                groupEntry: true,
+                text: I18n.tr("Group"),
+                description: "",
+                icon: "group_work"
+            }
+        ].concat(widgetsTab.getWidgetsForPopup());
         widgetSelectionPopupLoader.item.show();
     }
 
@@ -628,7 +646,9 @@ Item {
         popup.targetGroup = groupId;
         popup.selectingMember = true;
         const section = sectionItem(sectionId);
-        popup.widgets = getItemsForSection(sectionId).map((item, index) => Object.assign({}, item, { sourceIndex: index })).filter(item => section?.canGroup(item.sourceIndex));
+        popup.widgets = getItemsForSection(sectionId).map((item, index) => Object.assign({}, item, {
+                sourceIndex: index
+            })).filter(item => section?.canGroup(item.sourceIndex));
         popup.show();
     }
 
@@ -676,7 +696,10 @@ Item {
                 backgroundColor: Theme.secondaryContainer
                 textColor: Theme.onSecondaryContainer
                 onClicked: {
-                    const updates = { leftWidgets: defaultLeftWidgets, rightWidgets: defaultRightWidgets };
+                    const updates = {
+                        leftWidgets: defaultLeftWidgets,
+                        rightWidgets: defaultRightWidgets
+                    };
                     if (!widgetsTab.dankIslandOwnsSelectedBarCenter)
                         updates.centerWidgets = defaultCenterWidgets;
                     SettingsData.updateBarConfig(widgetsTab.selectedBarId, WidgetGroups.normalize(widgetsTab.selectedBarConfig, updates));
@@ -711,6 +734,7 @@ Item {
 
             WidgetsTabSection {
                 id: leftSection
+                parentModal: widgetsTab.parentModal
                 width: parent.width
                 title: selectedBarIsVertical ? I18n.tr("Top section") : I18n.tr("Left section")
                 sectionId: "left"
@@ -804,6 +828,7 @@ Item {
 
             WidgetsTabSection {
                 id: centerSection
+                parentModal: widgetsTab.parentModal
                 width: parent.width
                 visible: !widgetsTab.dankIslandOwnsSelectedBarCenter
                 title: selectedBarIsVertical ? I18n.tr("Middle section") : I18n.tr("Center section")
@@ -841,6 +866,7 @@ Item {
 
             WidgetsTabSection {
                 id: rightSection
+                parentModal: widgetsTab.parentModal
                 width: parent.width
                 title: selectedBarIsVertical ? I18n.tr("Bottom section") : I18n.tr("Right section")
                 sectionId: "right"

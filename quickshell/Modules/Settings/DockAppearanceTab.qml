@@ -198,7 +198,7 @@ Item {
 
         SettingsToggleCard {
             width: parent.width
-            visible: dock.hasConfig && !dock.connectedFrameModeActive
+            visible: dock.hasConfig
             iconName: "border_style"
             settingKey: "dockBorder"
             tags: ["dock", "border", "outline"]
@@ -250,15 +250,15 @@ Item {
             visible: dock.hasConfig && !dock.connectedFrameModeActive
             target: "surfaces"
             parentModal: root.parentModal
-            section: "surfaceOpacity_dock_" + dock.selectedDockId
-            settingLabel: I18n.tr("Opacity")
+            section: "surfaceMaterial_bar"
+            settingLabel: I18n.tr("Surface material")
         }
 
         SettingsControlledBy {
             visible: dock.connectedFrameModeActive
             parentModal: root.parentModal
             section: "frameBorder"
-            settingLabel: I18n.tr("Dock margin, opacity, and border")
+            settingLabel: I18n.tr("Dock margin and border")
             reason: I18n.tr("Managed by Frame in Connected Mode")
         }
     }

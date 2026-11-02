@@ -8,9 +8,7 @@ Column {
     id: root
 
     property var parentModal: null
-    readonly property bool followsSurfaces: SettingsData.floatingWindowSyncGlobal ?? true
     readonly property bool borderEnabled: SettingsData.blurBorderEnabled ?? false
-    readonly property bool layerOutlineEnabled: (SettingsData.blurLayerOutlineOpacity ?? 0) > 0
     readonly property string windowRadiusKey: CompositorService.supportsLayoutConfig ? CompositorService.configKey + "LayoutRadiusOverride" : ""
 
     width: parent?.width ?? 0
@@ -32,41 +30,6 @@ Column {
         }
     }
 
-    readonly property var opacityTargets: {
-        SettingsData.barConfigs;
-        SettingsData.dockConfigs;
-        const frameBarId = SettingsData.frameEnabled ? SettingsData.frameBarConfig?.id : undefined;
-        const bars = SettingsData.barConfigs.filter(config => !SettingsData.isDotBarConfig(config)).map(config => ({
-                    key: "bar:" + config.id,
-                    kind: "bar",
-                    id: config.id,
-                    name: config.name || config.id,
-                    enabled: config.enabled !== false,
-                    override: config.followInterfaceStyle === false,
-                    transparency: config.transparency ?? 1,
-                    frame: config.id === frameBarId
-                }));
-        const docks = SettingsData.dockConfigs.map(config => ({
-                    key: "dock:" + config.id,
-                    kind: "dock",
-                    id: config.id,
-                    name: config.name,
-                    enabled: config.enabled !== false,
-                    override: config.followInterfaceStyle === false,
-                    transparency: config.transparency ?? 1,
-                    overlay: config.useOverlayLayer ?? false
-                }));
-        return bars.concat(docks);
-    }
-
-    function setOpacityOverride(target, patch) {
-        if (target.kind === "bar") {
-            SettingsData.updateBarConfig(target.id, patch);
-            return;
-        }
-        SettingsData.updateDockConfig(target.id, patch);
-    }
-
     function openSurfaceBorderColorPicker() {
         PopoutService.colorPickerModal.selectedColor = SettingsData.blurBorderCustomColor ?? "#ffffff";
         PopoutService.colorPickerModal.pickerTitle = I18n.tr("Surface Border Color");
@@ -76,50 +39,43 @@ Column {
         PopoutService.colorPickerModal.open();
     }
 
+    SettingsMaterialCard {
+        materialKind: "bar"
+        settingKey: "surfaceMaterial_bar"
+        title: I18n.tr("Bars and docks")
+        description: I18n.tr("Bars, docks and frame")
+        tags: ["surface", "material", "opacity", "blur", "highlight", "bar", "dock", "frame"]
+    }
+
+    SettingsMaterialCard {
+        materialKind: "island"
+        settingKey: "surfaceMaterial_island"
+        title: I18n.tr("Islands")
+        description: I18n.tr("Islands, satellites and free placement")
+        tags: ["surface", "material", "opacity", "blur", "highlight", "island", "satellite", "dot"]
+    }
+
+    SettingsMaterialCard {
+        materialKind: "settings"
+        settingKey: "surfaceMaterial_settings"
+        title: I18n.tr("Settings windows")
+        description: I18n.tr("Settings and native floating windows")
+        tags: ["surface", "material", "opacity", "blur", "highlight", "settings", "window", "floating"]
+    }
+
+    SettingsMaterialCard {
+        materialKind: "popup"
+        settingKey: "surfaceMaterial_popup"
+        title: I18n.tr("Popups")
+        description: I18n.tr("Dash, control center, launcher, notifications and OSD")
+        tags: ["surface", "material", "opacity", "blur", "highlight", "popup", "dash", "control center", "launcher", "notification", "osd"]
+    }
+
     SettingsCard {
         tab: "theme"
         tags: ["surface", "popup", "transparency", "opacity", "modal", "corner", "radius", "blur", "background", "glass", "frosted", "shadow", "elevation", "foreground", "layers"]
         title: I18n.tr("Surfaces", "plural noun, settings title, shell surfaces like popouts and modals")
         settingKey: "surfaceStyling"
-
-        SettingsSliderRow {
-            tab: "theme"
-            tags: ["surface", "popup", "transparency", "opacity", "modal"]
-            settingKey: "popupTransparency"
-            text: I18n.tr("Opacity")
-            value: Math.round(SettingsData.popupTransparency * 100)
-            minimum: 0
-            maximum: 100
-            onSliderValueChanged: newValue => SettingsData.set("popupTransparency", newValue / 100)
-        }
-
-        SettingsToggleSliderRow {
-            tab: "theme"
-            tags: ["foreground", "layers", "opacity", "transparency", "contrast", "cards", "surface", "blur", "glass", "frosted"]
-            settingKey: "blurForegroundLayers"
-            valueKeys: ["foregroundLayerTransparency"]
-            text: I18n.tr("Foreground layers")
-            checked: SettingsData.blurForegroundLayers ?? true
-            value: Math.round((SettingsData.foregroundLayerTransparency ?? 1.0) * 100)
-            minimum: 0
-            maximum: 100
-            onToggled: checked => SettingsData.set("blurForegroundLayers", checked)
-            onSliderValueChanged: newValue => SettingsData.set("foregroundLayerTransparency", newValue / 100)
-        }
-
-        SettingsToggleSliderRow {
-            tab: "theme"
-            tags: ["foreground", "layers", "outline", "border", "opacity", "cards", "pills", "widgets", "notifications", "control center"]
-            settingKey: "blurLayerOutline"
-            text: I18n.tr("Layer outline")
-            description: I18n.tr("Faint edge on cards, pills and widgets", "surface layer outline toggle description")
-            checked: root.layerOutlineEnabled
-            value: Math.round((SettingsData.blurLayerOutlineOpacity ?? 0) * 100)
-            minimum: 1
-            maximum: 40
-            onToggled: checked => SettingsData.set("blurLayerOutlineOpacity", checked ? 0.12 : 0)
-            onSliderValueChanged: newValue => SettingsData.set("blurLayerOutlineOpacity", newValue / 100)
-        }
 
         SettingsToggleSliderRow {
             tab: "theme"
@@ -196,26 +152,17 @@ Column {
             reason: I18n.tr("Managed by Frame in Connected Mode")
         }
 
-        SettingsToggleSliderRow {
+        SettingsSliderRow {
             tab: "theme"
             tags: ["blur", "background", "transparency", "glass", "frosted", "strength", "radius", "size", "passes", "reach"]
-            settingKey: "blurEnabled"
-            valueKeys: ["blurStrength"]
-            text: I18n.tr("Background blur")
-            visible: BlurService.available
-            checked: SettingsData.blurEnabled ?? false
+            settingKey: "blurStrength"
+            text: I18n.tr("Shared blur strength")
+            description: I18n.tr("Applies to all surface categories")
+            enabled: BlurService.available
             value: BlurService.strength
             minimum: 16
             maximum: 160
             unit: "px"
-            onToggled: checked => {
-                SettingsData.set("blurEnabled", checked);
-                if (!checked || SettingsData.blurBorderSeeded)
-                    return;
-                SettingsData.set("blurBorderSeeded", true);
-                SettingsData.set("blurBorderEnabled", true);
-                SettingsSearchService.navigateToSection("blurBorderEnabled");
-            }
             onSliderValueChanged: newValue => SettingsData.set("blurStrength", newValue)
         }
 
@@ -313,114 +260,11 @@ Column {
         }
     }
 
-    Repeater {
-        model: [
-            {
-                kind: "bar",
-                title: I18n.tr("Bars"),
-                settingKey: "barOpacityOverrides"
-            },
-            {
-                kind: "dock",
-                title: I18n.tr("Docks"),
-                settingKey: "dockOpacityOverrides"
-            }
-        ]
-
-        SettingsCard {
-            id: targetCard
-
-            required property var modelData
-            readonly property var targets: root.opacityTargets.filter(target => target.kind === modelData.kind)
-            readonly property var activeTargets: targets.filter(target => target.enabled)
-            readonly property var hiddenTargets: targets.filter(target => !target.enabled)
-            // String keys: a config edit must not rebuild the row holding the focused control
-            readonly property string activeKeys: activeTargets.map(target => target.key).join("\n")
-            readonly property string hiddenKeys: hiddenTargets.map(target => target.key).join("\n")
-            property bool showHidden: false
-
-            tab: "theme"
-            tags: ["surface", "opacity", "transparency", modelData.kind, "override"]
-            title: modelData.title
-            settingKey: modelData.settingKey
-            visible: targets.length > 0
-
-            SettingsControlledBy {
-                visible: targetCard.modelData.kind === "dock" && SettingsData.connectedFrameModeActive && targetCard.activeTargets.some(target => !target.overlay)
-                parentModal: root.parentModal
-                section: "frameSurfaceOpacity"
-                settingLabel: I18n.tr("Opacity")
-                reason: I18n.tr("Managed by Frame in Connected Mode")
-            }
-
-            Repeater {
-                model: targetCard.activeKeys ? targetCard.activeKeys.split("\n") : []
-                delegate: opacityTargetRow
-            }
-
-            SettingsRow {
-                tab: "theme"
-                tags: ["surface", "opacity", "transparency", targetCard.modelData.kind, "hidden", "disabled"]
-                title: I18n.tr("Hidden (%1)", "island settings: hidden groups divider, %1 is count").arg(targetCard.hiddenTargets.length)
-                iconName: "visibility_off"
-                visible: targetCard.hiddenTargets.length > 0
-                clickable: true
-                onClicked: targetCard.showHidden = !targetCard.showHidden
-
-                DIcon {
-                    anchors.verticalCenter: parent.verticalCenter
-                    name: targetCard.showHidden ? "expand_less" : "expand_more"
-                    size: Theme.iconSize
-                    color: Theme.onSurfaceVariant
-                }
-            }
-
-            Repeater {
-                model: targetCard.showHidden && targetCard.hiddenKeys ? targetCard.hiddenKeys.split("\n") : []
-                delegate: opacityTargetRow
-            }
-        }
-    }
-
     SettingsCard {
         tab: "theme"
         tags: ["floating", "window", "settings", "notepad", "authentication", "polkit", "opacity", "transparency", "foreground", "tile", "tiling", "override"]
         title: I18n.tr("Floating windows")
         settingKey: "floatingWindows"
-
-        SettingsToggleCard {
-            tab: "theme"
-            tags: ["floating", "window", "sync", "global", "surface", "opacity", "override"]
-            settingKey: "floatingWindowSyncGlobal"
-            title: I18n.tr("Override", "verb, toggle to override the global setting for this item")
-            checked: !root.followsSurfaces
-            onToggled: checked => SettingsData.set("floatingWindowSyncGlobal", !checked)
-
-            SettingsSliderRow {
-                tab: "theme"
-                tags: ["floating", "window", "opacity", "transparency", "settings", "notepad", "authentication", "polkit"]
-                settingKey: "floatingWindowTransparency"
-                text: I18n.tr("Opacity")
-                value: Math.round(Theme.floatingWindowTransparency * 100)
-                minimum: 0
-                maximum: 100
-                onSliderValueChanged: newValue => SettingsData.set("floatingWindowTransparency", newValue / 100)
-            }
-
-            SettingsToggleSliderRow {
-                tab: "theme"
-                tags: ["floating", "window", "foreground", "layers", "opacity", "transparency", "contrast", "cards", "blur", "glass"]
-                settingKey: "floatingWindowForegroundLayers"
-                valueKeys: ["floatingWindowForegroundTransparency"]
-                text: I18n.tr("Foreground layers")
-                checked: Theme.floatingWindowForegroundLayers
-                value: Math.round(Theme.floatingWindowForegroundTransparency * 100)
-                minimum: 0
-                maximum: 100
-                onToggled: checked => SettingsData.set("floatingWindowForegroundLayers", checked)
-                onSliderValueChanged: newValue => SettingsData.set("floatingWindowForegroundTransparency", newValue / 100)
-            }
-        }
 
         SettingsToggleRow {
             tab: "theme"
@@ -451,42 +295,6 @@ Column {
         IncludeSetupBanner {
             include: windowRulesInclude
             visibleCondition: windowRulesInclude.compositorSupported && CompositorService.dmsWindowFloatingActive
-        }
-    }
-
-    Component {
-        id: opacityTargetRow
-
-        SettingsToggleSliderRow {
-            id: overrideRow
-
-            required property string modelData
-            readonly property var target: root.opacityTargets.find(entry => entry.key === modelData) ?? null
-
-            tab: "theme"
-            tags: ["surface", "opacity", "transparency", "bar", "dock", "override"]
-            settingKey: "surfaceOpacity_" + modelData.replace(":", "_")
-            text: target?.name ?? ""
-            description: target?.frame ? I18n.tr("Frame") + " · " + I18n.tr("Override") : I18n.tr("Override")
-            checked: target?.override ?? false
-            value: Math.round((target?.transparency ?? 1) * 100)
-            minimum: 0
-            maximum: 100
-            modified: target?.override ?? false
-            valueModified: (target?.transparency ?? 1) !== 1
-            onResetRequested: root.setOpacityOverride(target, {
-                followInterfaceStyle: true,
-                transparency: 1
-            })
-            onValueResetRequested: root.setOpacityOverride(target, {
-                transparency: 1
-            })
-            onToggled: checked => root.setOpacityOverride(target, {
-                    followInterfaceStyle: !checked
-                })
-            onSliderDragFinished: finalValue => root.setOpacityOverride(target, {
-                    transparency: finalValue / 100
-                })
         }
     }
 
