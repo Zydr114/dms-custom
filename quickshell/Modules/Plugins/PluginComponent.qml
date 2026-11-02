@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell.Io
 import qs.Common
 import qs.Services
+import "../../Common/SurfaceStyle.js" as SurfaceStyle
 
 Item {
     id: root
@@ -25,6 +26,9 @@ Item {
     property real barThickness: 48
     property real barSpacing: 4
     property var barConfig: null
+    property var groupContext: null
+    property var materialProfile: blurBarWindow?.surfaceProfile ?? SurfaceStyle.profile(SettingsData.surfaceProfiles, "bar")
+    property bool materialCovered: blurBarWindow?.ownsBarMaterial ?? false
     property bool widgetBackground: !(barConfig?.noBackground ?? false)
     property var backgroundOpacity: null
     property string blurMode: "inherit"
@@ -219,6 +223,9 @@ Item {
         barThickness: root.barThickness
         barSpacing: root.barSpacing
         barConfig: root.barConfig
+        groupContext: root.groupContext
+        materialProfile: root.materialProfile
+        materialCovered: root.materialCovered
         widgetBackground: root.widgetBackground
         backgroundOpacity: root.backgroundOpacity
         blurMode: root.blurMode
@@ -270,6 +277,9 @@ Item {
         barThickness: root.barThickness
         barSpacing: root.barSpacing
         barConfig: root.barConfig
+        groupContext: root.groupContext
+        materialProfile: root.materialProfile
+        materialCovered: root.materialCovered
         widgetBackground: root.widgetBackground
         backgroundOpacity: root.backgroundOpacity
         blurMode: root.blurMode

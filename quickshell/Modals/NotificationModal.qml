@@ -55,7 +55,6 @@ DModal {
 
     modalWidth: Math.min(NotificationMetrics.modalWidth, screenWidth - Theme.spacingL * 2)
     modalHeight: Math.min(NotificationMetrics.modalHeight, screenHeight * NotificationMetrics.modalScreenRatio)
-    backgroundColor: Theme.floatingWindowSurface
     visible: false
     onBackgroundClicked: hide()
     onOpened: () => {

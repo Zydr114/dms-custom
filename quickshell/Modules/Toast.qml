@@ -13,6 +13,7 @@ PanelWindow {
     WlrLayershell.namespace: "dms:toast"
 
     property var modelData
+    property string materialKind: "popup"
     property bool shouldBeVisible: false
     property bool _surfaceFrameReady: false
     readonly property bool presented: shouldBeVisible && _surfaceFrameReady
@@ -111,13 +112,13 @@ PanelWindow {
         readonly property color surfaceColor: {
             switch (ToastService.currentLevel) {
             case ToastService.levelError:
-                return Theme.error;
+                return Theme.withAlpha(Theme.error, Theme.surfaceMaterial(root.materialKind).opacity);
             case ToastService.levelWarn:
-                return Theme.warning;
+                return Theme.withAlpha(Theme.warning, Theme.surfaceMaterial(root.materialKind).opacity);
             case ToastService.levelInfo:
-                return Theme.readableSurface;
+                return Theme.surfaceColor(root.materialKind);
             default:
-                return Theme.readableSurface;
+                return Theme.surfaceColor(root.materialKind);
             }
         }
         color: "transparent"
@@ -459,6 +460,12 @@ PanelWindow {
             shadowEnabled: Theme.elevationEnabled
         }
 
+        SurfaceHighlight {
+            anchors.fill: parent
+            radius: toast.radius
+            strength: Theme.surfaceMaterial(root.materialKind).highlight
+        }
+
         Behavior on opacity {
             NumberAnimation {
                 duration: Theme.mediumDuration
@@ -481,6 +488,7 @@ PanelWindow {
 
     WindowBlur {
         targetWindow: root
+        materialKind: root.materialKind
         blurEnabled: root.presented
         surfaceColor: toast.surfaceColor
         blurX: toast.x

@@ -15,6 +15,7 @@ Item {
     readonly property var log: Log.scoped("DPopoutHost")
 
     required property var popoutHandle
+    property string materialKind: popoutHandle.materialKind ?? "popup"
     property bool connected: true
     readonly property bool fluidMotionEnabled: Theme.isFluidEffect && (!connected || frameOwnsConnectedChrome)
     property bool _fluidMotionActive: false
@@ -1824,7 +1825,7 @@ Item {
             readonly property alias contentWrapper: contentWrapper
             readonly property alias blur: popoutBlur
             readonly property real surfaceRadius: root.usesConnectedSurfaceChrome ? Theme.connectedSurfaceRadius : Theme.windowRadius
-            readonly property color surfaceColor: root.usesConnectedSurfaceChrome ? Theme.connectedSurfaceColor : Theme.readableSurface
+            readonly property color surfaceColor: root.usesConnectedSurfaceChrome ? Theme.connectedSurfaceColor : Theme.surfaceColor(root.materialKind)
             readonly property color surfaceBorderColor: root.usesConnectedSurfaceChrome ? Theme.withAlpha(BlurService.borderColor, 0) : BlurService.borderColor
             readonly property real surfaceBorderWidth: root.usesConnectedSurfaceChrome || !root.popoutHandle.surfaceBorderEnabled ? 0 : BlurService.borderWidth
             readonly property real surfaceTopLeftRadius: root.usesConnectedSurfaceChrome && (contentContainer.barTop || contentContainer.barLeft) ? 0 : surfaceRadius
@@ -1836,6 +1837,8 @@ Item {
             WindowBlur {
                 id: popoutBlur
                 targetWindow: contentWindow
+                materialKind: root.materialKind
+                blurRequested: root.usesConnectedSurfaceChrome ? Theme.connectedSurfaceBlurEnabled : Theme.surfaceMaterial(root.materialKind).blur
                 blurEnabled: !root.frameOwnsConnectedChrome && (!root.usesConnectedSurfaceChrome || Theme.connectedSurfaceBlurEnabled)
                 surfaceColor: chrome.surfaceColor
 
@@ -1965,6 +1968,8 @@ Item {
                             property vector4d bodyRect: Qt.vector4d((contentContainer.barLeft ? 0 : localChrome.pad) + localChrome.extraLeft, (contentContainer.barTop ? 0 : localChrome.pad) + localChrome.extraTop, rollOutAdjuster.baseWidth, rollOutAdjuster.baseHeight)
                             property vector4d cornerRadius: Qt.vector4d(chrome.surfaceTopLeftRadius, chrome.surfaceTopRightRadius, chrome.surfaceBottomRightRadius, chrome.surfaceBottomLeftRadius)
                             property vector4d edgeParam: Qt.vector4d(contentContainer.barTop ? 0 : (contentContainer.barBottom ? 1 : (contentContainer.barLeft ? 2 : 3)), Theme.connectedCornerRadius, 0, 0)
+                            property real highlightWidth: Theme.outlineWidth
+                            property vector4d highlightColor: Qt.vector4d(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, Theme.surfaceMaterial("bar").highlight)
                         }
                     }
 
@@ -2018,6 +2023,15 @@ Item {
                                 color: chrome.surfaceColor
                                 border.color: chrome.surfaceBorderColor
                                 border.width: chrome.surfaceBorderWidth
+                            }
+
+                            SurfaceHighlight {
+                                anchors.fill: parent
+                                topLeftRadius: chrome.surfaceTopLeftRadius
+                                topRightRadius: chrome.surfaceTopRightRadius
+                                bottomLeftRadius: chrome.surfaceBottomLeftRadius
+                                bottomRightRadius: chrome.surfaceBottomRightRadius
+                                strength: Theme.surfaceMaterial(root.materialKind).highlight
                             }
                         }
                     }
@@ -2081,7 +2095,8 @@ Item {
             WindowBlur {
                 id: popoutBlur
                 targetWindow: contentWindow
-                surfaceColor: Theme.readableSurface
+                materialKind: root.materialKind
+                surfaceColor: Theme.surfaceColor(root.materialKind)
                 readonly property real s: Math.min(1, contentContainer.scaleValue)
                 readonly property real op: Math.max(0, Math.min(1, (morph.value - 0.08) * 1.6))
                 readonly property real visibleScale: s * op
@@ -2127,7 +2142,7 @@ Item {
                     direction: root.effectiveShadowDirection
                     fallbackOffset: root.shadowFallbackOffset
                     targetRadius: Theme.windowRadius
-                    targetColor: root._fluidMotionActive ? Theme.readableSurface : "transparent"
+                    targetColor: root._fluidMotionActive ? Theme.surfaceColor(root.materialKind) : "transparent"
                     shadowEnabled: Theme.elevationEnabled && SettingsData.popoutElevationEnabled && Quickshell.env("DMS_DISABLE_LAYER") !== "true" && Quickshell.env("DMS_DISABLE_LAYER") !== "1" && !(root.suspendShadowWhileResizing && root._resizeActive)
                 }
 
@@ -2167,7 +2182,7 @@ Item {
                         anchors.fill: parent
                         visible: !root._fluidMotionActive
                         radius: Theme.windowRadius
-                        color: Theme.readableSurface
+                        color: Theme.surfaceColor(root.materialKind)
                     }
                 }
 
@@ -2185,6 +2200,12 @@ Item {
                     border.color: BlurService.borderColor
                     border.width: root.popoutHandle.surfaceBorderEnabled ? BlurService.borderWidth : 0
                     z: 100
+
+                    SurfaceHighlight {
+                        anchors.fill: parent
+                        radius: parent.radius
+                        strength: Theme.surfaceMaterial(root.materialKind).highlight
+                    }
                 }
             }
         }

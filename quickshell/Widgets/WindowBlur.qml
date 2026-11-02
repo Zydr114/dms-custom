@@ -10,6 +10,8 @@ Item {
     visible: false
 
     required property var targetWindow
+    property string materialKind: "popup"
+    property bool blurRequested: Theme.surfaceMaterial(materialKind).blur === true
     property bool blurEnabled: true
     property color surfaceColor: "transparent"
     property real blurX: 0
@@ -24,7 +26,12 @@ Item {
     property real clipWidth: blurWidth
     property real clipHeight: blurHeight
 
-    readonly property bool _active: blurEnabled && surfaceColor.a < 1 && BlurService.enabled && !!targetWindow
+    readonly property bool _active: blurEnabled && blurRequested && surfaceColor.a < 1 && BlurService.available && !!targetWindow
+
+    onBlurRequestedChanged: {
+        if (blurRequested)
+            BlurService.probe();
+    }
 
     Region {
         id: blurRegion
@@ -169,7 +176,11 @@ Item {
         }
     }
 
-    Component.onCompleted: _scheduleLifecycleKick()
+    Component.onCompleted: {
+        if (blurRequested)
+            BlurService.probe();
+        _scheduleLifecycleKick();
+    }
     Component.onDestruction: {
         lifecycleKickAction.cancel();
         if (targetWindow && targetWindow.BackgroundEffect)

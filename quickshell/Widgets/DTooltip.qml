@@ -40,6 +40,14 @@ PanelWindow {
     WlrLayershell.layer: WlrLayershell.Overlay
     WlrLayershell.exclusiveZone: -1
 
+    WindowBlur {
+        targetWindow: root
+        surfaceColor: tooltipSurface.color
+        blurWidth: root.visible ? root.width : 0
+        blurHeight: root.visible ? root.height : 0
+        blurRadius: tooltipSurface.radius
+    }
+
     anchors {
         top: true
         left: true
@@ -67,9 +75,17 @@ PanelWindow {
     }
 
     Rectangle {
+        id: tooltipSurface
         anchors.fill: parent
-        color: Theme.inverseSurface
+        color: Theme.withAlpha(Theme.inverseSurface, Theme.popupMaterial.opacity)
         radius: Theme.cornerRadiusXS
+
+        SurfaceHighlight {
+            anchors.fill: parent
+            radius: tooltipSurface.radius
+            strength: Theme.popupMaterial.highlight
+            lightColor: Theme.inverseOnSurface
+        }
 
         StyledText {
             id: textContent

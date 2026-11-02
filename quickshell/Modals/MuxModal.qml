@@ -130,7 +130,6 @@ DModal {
     visible: false
     modalWidth: 600
     modalHeight: 600
-    backgroundColor: Theme.floatingWindowSurface
     enableShadow: true
     keepContentLoaded: true
 
@@ -324,7 +323,7 @@ DModal {
                 width: parent.width
                 height: 56
                 radius: Theme.cornerRadius
-                color: muxModal.selectedIndex === -1 ? Theme.selectedContainer : (newMouse.containsMouse ? Theme.foregroundColor(Theme.chipSurface, true) : Theme.floatingWindowNestedSurface)
+                color: muxModal.selectedIndex === -1 ? Theme.selectedContainer : Theme.foregroundColor(newMouse.containsMouse ? Theme.chipSurface : Theme.cardSurface, Theme.isFloatingWindow(muxModal))
                 border.width: Theme.layerOutlineWidth
                 border.color: Theme.outlineMedium
 

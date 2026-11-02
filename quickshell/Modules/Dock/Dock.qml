@@ -67,6 +67,7 @@ Variants {
 
         WindowBlur {
             targetWindow: dock
+            materialKind: "bar"
             blurEnabled: !body.usesConnectedFrameChrome
             surfaceColor: body.surfaceColor
             blurX: body.blurX

@@ -162,7 +162,7 @@ Scope {
 
                 WindowBlur {
                     targetWindow: overlayWindow
-                    surfaceColor: Theme.floatingWindowSurface
+                    surfaceColor: Theme.readableSurface
                     readonly property real s: Math.min(1, spotlightContainer.scale)
                     readonly property bool active: overlayWindow.shouldShowSpotlight && spotlightContainer.opacity > 0
                     blurX: spotlightContainer.x + spotlightContainer.width * (1 - s) * 0.5
@@ -356,12 +356,20 @@ Scope {
 
                     Rectangle {
                         anchors.fill: parent
-                        color: Theme.floatingWindowSurface
+                        color: Theme.readableSurface
                         radius: spotlightContainer.cornerRadius
                         bottomLeftRadius: spotlightContainer.bottomRadius
                         bottomRightRadius: spotlightContainer.bottomRadius
                         border.color: Theme.outlineMedium
                         border.width: overlayWindow.useSpotlightStyle ? 0 : 1
+                    }
+
+                    SurfaceHighlight {
+                        anchors.fill: parent
+                        radius: spotlightContainer.cornerRadius
+                        bottomLeftRadius: spotlightContainer.bottomRadius
+                        bottomRightRadius: spotlightContainer.bottomRadius
+                        strength: Theme.popupMaterial.highlight
                     }
 
                     FocusScope {

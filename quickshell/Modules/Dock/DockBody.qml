@@ -188,6 +188,8 @@ FocusScope {
     readonly property bool isVertical: dock.config.position === SettingsData.Position.Left || dock.config.position === SettingsData.Position.Right
 
     property bool autoHide: dock.config.autoHide || dock.config.smartAutoHide
+    readonly property var surfaceProfile: Theme.surfaceMaterial("bar")
+    readonly property bool ownsBarMaterial: true
     property real backgroundTransparency: SettingsData.barTransparency(dock.config)
     property bool groupByApp: dock.config.groupByApp
     readonly property int borderThickness: dock.config.borderEnabled ? dock.config.borderThickness : 0
@@ -779,10 +781,20 @@ FocusScope {
                     clip: false
 
                     MorphSurface {
+                        id: dockMaterial
                         motion: surfaceMotion
                         anchors.fill: parent
                         visible: !usesConnectedFrameChrome && (!FrameTransitionState.effectiveConnectedFrameModeActive || dock.reveal)
                         color: dock.surfaceColor
+
+                        SurfaceHighlight {
+                            anchors.fill: parent
+                            strength: dock.surfaceProfile.highlight
+                            topLeftRadius: dockMaterial.topLeftRadius
+                            topRightRadius: dockMaterial.topRightRadius
+                            bottomLeftRadius: dockMaterial.bottomLeftRadius
+                            bottomRightRadius: dockMaterial.bottomRightRadius
+                        }
                     }
 
                     onXChanged: dockChromeSync.schedule()
@@ -813,6 +825,8 @@ FocusScope {
 
                         property real widthPx: width
                         property real heightPx: height
+                        property real highlightWidth: Theme.outlineWidth
+                        property vector4d highlightColor: Qt.vector4d(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, dock.surfaceProfile.highlight)
                         property vector4d surfaceColor: Qt.vector4d(dock.surfaceColor.r, dock.surfaceColor.g, dock.surfaceColor.b, dock.surfaceColor.a)
                         property vector4d shadowColor: Qt.vector4d(0, 0, 0, 0)
                         property vector4d shadowParam: Qt.vector4d(0, 0, 0, 0)

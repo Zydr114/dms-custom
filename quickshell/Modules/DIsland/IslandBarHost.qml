@@ -9,6 +9,7 @@ import qs.Modules.DIsland.Activities
 import qs.Services
 import qs.Widgets
 import "../../Common/LayoutResolver.js" as Resolver
+import "../../Common/SurfaceStyle.js" as SurfaceStyle
 
 Item {
     id: root
@@ -24,6 +25,8 @@ Item {
     property real hostOffsetY: 0
     property string chrome: "own"
     readonly property bool embedded: root.chrome !== "own"
+    readonly property bool materialCovered: root.embedded && (root.barBody?.ownsBarMaterial ?? true)
+    readonly property var surfaceProfile: root.embedded ? root.barBody?.surfaceProfile ?? SurfaceStyle.profile(SettingsData.surfaceProfiles, "bar") : SurfaceStyle.profile(SettingsData.surfaceProfiles, "island")
     readonly property bool connectedChrome: root.chrome === "none"
     property real bandThickness: 0
     // The visible band along the bar, in host coordinates; a percent-length or padded bar is shorter than its window.
@@ -506,11 +509,12 @@ Item {
         freeMargin: root.freeMargin
         compactFaceOverride: root.dotMode ? dotFaceComponent : null
         chrome: root.chrome
+        materialCovered: root.materialCovered
         notch: root.notch
         notchRadius: BarMetrics.gothRadius(root.barConfig)
         bandColor: root.bandColor
-        compactBackground: root.embedded && root.setting("islandWidgetBackground") === true && !(root.barConfig?.noBackground ?? false)
-        compactBackgroundColor: BarMetrics.widgetFill(root.barConfig)
+        compactBackground: root.materialCovered && root.setting("islandWidgetBackground") === true && !(root.barConfig?.noBackground ?? false)
+        compactBackgroundColor: Theme.withAlpha(Theme.widgetBaseBackgroundColor, root.surfaceProfile.foregroundOpacity * Theme.stateLayerDrag)
         opacity: root.freeOpacity
         reducedMotion: SettingsData.reduceMotion || SettingsData.animationDuration <= 0
         springStiffness: Math.max(root.springStiffnessRange[0], Math.min(root.springStiffnessRange[1], root.setting("islandSpringStiffness")))
@@ -518,7 +522,9 @@ Item {
         springMass: Math.max(root.springMassRange[0], Math.min(root.springMassRange[1], root.setting("islandSpringMass")))
         palette: root.setting("islandPalette")
         highContrast: !root.embedded && root.setting("islandHighContrast")
-        transparency: SettingsData.barTransparency(root.barConfig)
+        materialProfile: root.surfaceProfile
+        surfaceMaterialKind: root.embedded ? "bar" : "island"
+        transparency: root.surfaceProfile.opacity
         surfaceBase: SettingsData.barSurfaceColor(root.barConfig)
         onScrollWheel: wheel => root.scrollWheel(wheel)
 

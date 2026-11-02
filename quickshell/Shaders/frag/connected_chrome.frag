@@ -10,6 +10,8 @@ layout(std140, binding = 0) uniform buf {
     float qt_Opacity;
     float widthPx;
     float heightPx;
+    float highlightWidth;
+    vec4 highlightColor;
     vec4 surfaceColor;  // straight (non-premultiplied) rgba
     vec4 shadowColor;   // straight rgba; a = 0 disables both shadow terms
     vec4 shadowParam;   // key: x = blur px, y = spread px, z,w = offset px
@@ -59,5 +61,10 @@ void main() {
         float sh = 1.0 - (1.0 - covK * ubuf.shadowColor.a) * (1.0 - covA * ubuf.ambientParam.z);
         col += vec4(ubuf.shadowColor.rgb, 1.0) * (sh * (1.0 - col.a));
     }
-    fragColor = col * (ubuf.surfaceColor.a * ubuf.qt_Opacity);
+    col *= ubuf.surfaceColor.a;
+    float ring = cov * smoothstep(-ubuf.highlightWidth - fw, -ubuf.highlightWidth + fw, d);
+    float light = mix(1.0, 0.2, clamp(px.y / max(ubuf.heightPx, 1.0), 0.0, 1.0));
+    float ha = ring * light * ubuf.highlightColor.a;
+    col = vec4(ubuf.highlightColor.rgb * ha, ha) + col * (1.0 - ha);
+    fragColor = col * ubuf.qt_Opacity;
 }

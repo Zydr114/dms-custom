@@ -192,8 +192,8 @@ DModal {
                                 if (isSelected)
                                     return Theme.primaryHoverLight;
                                 if (mouseArea.containsMouse)
-                                    return Theme.foregroundColor(Theme.chipSurface, true);
-                                return Theme.floatingWindowNestedSurface;
+                                    return Theme.foregroundColor(Theme.chipSurface, Theme.isFloatingWindow(root));
+                                return Theme.foregroundColor(Theme.cardSurface, Theme.isFloatingWindow(root));
                             }
 
                             border.color: isSelected ? Theme.focusRingColor : Theme.outlineMedium

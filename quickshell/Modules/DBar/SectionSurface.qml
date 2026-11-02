@@ -1,5 +1,6 @@
 import QtQuick
 import qs.Common
+import qs.Widgets
 import qs.Modules.SurfaceWidgets
 
 Item {
@@ -19,6 +20,7 @@ Item {
     property real sweep: 0
     property bool gothEnabled: false
     property color fillColor: "transparent"
+    property real highlight: 0
     property real clearEdge: NaN
     property real dpr: 1
 
@@ -84,6 +86,15 @@ Item {
             topRightRadius: 0
             bottomLeftRadius: root.startAttached ? 0 : root.cornerR
             bottomRightRadius: root.endAttached ? 0 : root.cornerR
+        }
+
+        SurfaceHighlight {
+            anchors.fill: body
+            strength: root.highlight
+            topLeftRadius: body.topLeftRadius
+            topRightRadius: body.topRightRadius
+            bottomLeftRadius: body.bottomLeftRadius
+            bottomRightRadius: body.bottomRightRadius
         }
 
         GothCorner {

@@ -271,8 +271,12 @@ Item {
 
     property var blurRegion: null
     property var _blurWidgetItems: []
-    readonly property bool backgroundBlurEnabled: BlurService.enabledFor(barConfig?.blur)
-    readonly property bool scopedBlurRequested: SurfaceStyle.barBlurRequested(barConfig, SettingsData.blurEnabled)
+    readonly property var surfaceProfile: SurfaceStyle.profile(SettingsData.surfaceProfiles, SettingsData.isIslandBarConfig(barConfig) ? "island" : "bar")
+    readonly property bool materialBackgroundEnabled: barConfig?.materialBackgroundEnabled !== false
+    readonly property bool frameMaterialOwned: FrameTransitionState.effectiveFrameEnabled && usesFrameBarChrome
+    readonly property bool ownsBarMaterial: isIsland ? islandSatelliteBackground : frameMaterialOwned || materialBackgroundEnabled
+    readonly property bool backgroundBlurEnabled: BlurService.available && surfaceProfile.blur === true
+    readonly property bool scopedBlurRequested: surfaceProfile.blur === true
     readonly property bool blurEnabled: BlurService.available && scopedBlurRequested
 
     onScopedBlurRequestedChanged: {
@@ -490,11 +494,11 @@ Item {
         id: barBlur
         visible: false
 
-        readonly property bool barHasTransparency: barWindow.backgroundBlurEnabled && !barWindow.isIsland && barWindow._backgroundAlpha > 0 && barWindow._backgroundAlpha < 1
-        readonly property bool islandTranslucent: barWindow.backgroundBlurEnabled && !!barWindow.islandHost && barWindow.islandHost.surfaceOpacity > 0 && barWindow.islandHost.surfaceOpacity < 1
+        readonly property bool barHasTransparency: barWindow.backgroundBlurEnabled && !barWindow.isIsland && !barWindow.frameMaterialOwned && barWindow.materialBackgroundEnabled && barWindow._backgroundAlpha >= 0 && barWindow._backgroundAlpha < 1
+        readonly property bool islandTranslucent: barWindow.backgroundBlurEnabled && !!barWindow.islandHost && barWindow.islandHost.surfaceOpacity >= 0 && barWindow.islandHost.surfaceOpacity < 1
         readonly property bool islandNotch: barWindow.islandHost?.notch ?? false
-        readonly property bool satelliteTranslucent: barWindow.backgroundBlurEnabled && barWindow.islandSatelliteBackground && barWindow.islandSatellitesEnabled && barWindow.islandSatelliteOpacity > 0 && barWindow.islandSatelliteOpacity < 1
-        readonly property bool frameOwnsBlur: FrameTransitionState.effectiveFrameEnabled && barWindow.usesFrameBarChrome && BlurService.enabled && SettingsData.frameBlurEnabled
+        readonly property bool satelliteTranslucent: barWindow.backgroundBlurEnabled && barWindow.islandSatelliteBackground && barWindow.islandSatellitesEnabled && barWindow.islandSatelliteOpacity >= 0 && barWindow.islandSatelliteOpacity < 1
+        readonly property bool frameOwnsBlur: barWindow.frameMaterialOwned && BlurService.available && SurfaceStyle.profile(SettingsData.surfaceProfiles, "bar").blur === true && Theme.frameSurfaceColor.a < 1
 
         function rebuild() {
             teardown();
@@ -633,7 +637,7 @@ Item {
 
     readonly property color _hostSurface: SettingsData.barSurfaceColor(barConfig)
     readonly property string _barId: barConfig?.id ?? "default"
-    readonly property real _backgroundAlpha: SettingsData.barTransparency(barConfig)
+    readonly property real _backgroundAlpha: surfaceProfile.opacity
     readonly property color _bgColor: (FrameTransitionState.effectiveFrameEnabled && usesFrameBarChrome) ? Theme.frameSurfaceColor : Theme.withAlpha(_hostSurface, _backgroundAlpha)
     readonly property real _dpr: CompositorService.getScreenScale(barWindow.screen)
 
@@ -1139,7 +1143,7 @@ Item {
                         barWindow: barWindow
                         axis: axis
                         barConfig: barWindow.renderBarConfig
-                        visible: !frameShapesBar && !barWindow.isIsland
+                        visible: !frameShapesBar && !barWindow.isIsland && barWindow.materialBackgroundEnabled
                         onGothEnabledChanged: _blurRebuildTimer.restart()
                         onWingChanged: barWindow.refreshBlurRegion()
                         onMotionRunningChanged: {
@@ -1163,6 +1167,7 @@ Item {
                         sweep: barWindow.islandGothRadius
                         gothEnabled: barWindow.isIsland && SettingsData.islandSetting(barConfig, "islandSatelliteGothCorners")
                         fillColor: Theme.withAlpha(barWindow.islandSurfaceColor, barWindow.islandSatelliteOpacity)
+                        highlight: barWindow.surfaceProfile.highlight
                         dpr: barWindow._dpr
                         clearEdge: barWindow.islandSatellitesClipToIsland ? barWindow.islandHost.currentAlongPos - barWindow.islandSatelliteGap - barWindow.islandFlareClearance - (barWindow.isVertical ? barUnitInset.y : barUnitInset.x) : NaN
                     }
@@ -1183,6 +1188,7 @@ Item {
                         sweep: barWindow.islandGothRadius
                         gothEnabled: barWindow.isIsland && SettingsData.islandSetting(barConfig, "islandSatelliteGothCorners")
                         fillColor: Theme.withAlpha(barWindow.islandSurfaceColor, barWindow.islandSatelliteOpacity)
+                        highlight: barWindow.surfaceProfile.highlight
                         dpr: barWindow._dpr
                         clearEdge: barWindow.islandSatellitesClipToIsland ? barWindow.islandHost.currentAlongPos + barWindow.islandHost.currentVisualAlong + barWindow.islandSatelliteGap + barWindow.islandFlareClearance - (barWindow.isVertical ? barUnitInset.y : barUnitInset.x) : NaN
                     }

@@ -35,7 +35,6 @@ DModal {
     layerNamespace: "dms:filebrowser"
     modalWidth: 860
     modalHeight: 620
-    backgroundColor: Theme.floatingWindowSurface
     closeOnEscapeKey: false
     closeOnBackgroundClick: true
     allowStacking: true

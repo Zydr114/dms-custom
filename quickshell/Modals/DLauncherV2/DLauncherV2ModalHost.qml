@@ -14,7 +14,8 @@ Item {
     id: root
     property bool connected: true
     property bool spotlight: false
-    readonly property bool isFloatingWindowSurface: connected ? !connectedSurfaceOverride : !frameConnected
+    property string materialKind: "popup"
+    readonly property bool isFloatingWindowSurface: false
     readonly property var log: Log.scoped("DLauncherV2ModalHost")
 
     property bool _fluidMotionActive: false
@@ -185,7 +186,7 @@ Item {
     readonly property int launcherAnimationDuration: frameOwnsConnectedChrome ? Theme.popoutAnimationDuration : Theme.modalAnimationDuration
     readonly property list<real> launcherEnterCurve: frameOwnsConnectedChrome ? Theme.variantPopoutEnterCurve : Theme.variantModalEnterCurve
     readonly property list<real> launcherExitCurve: frameOwnsConnectedChrome ? Theme.variantPopoutExitCurve : Theme.variantModalExitCurve
-    readonly property color backgroundColor: connectedSurfaceOverride ? Theme.connectedSurfaceColor : Theme.floatingWindowSurface
+    readonly property color backgroundColor: connectedSurfaceOverride ? Theme.connectedSurfaceColor : Theme.surfaceColor(materialKind)
     readonly property real cornerRadius: connectedSurfaceOverride ? Theme.connectedSurfaceRadius : spotlight ? LauncherMetrics.spotlightRadius(modalWidth) : Theme.windowRadius
     readonly property real frameBottomRadius: spotlight && !connectedSurfaceOverride ? LauncherMetrics.spotlightBottomRadius(modalWidth, _contentImplicitH) : cornerRadius
     readonly property color borderColor: {
@@ -918,6 +919,7 @@ Item {
 
             WindowBlur {
                 targetWindow: contentWindow
+                materialKind: root.materialKind
                 blurEnabled: !root.frameOwnsConnectedChrome
                 surfaceColor: root.backgroundColor
                 readonly property real s: Math.min(1, contentContainer.scaleValue)
@@ -1110,6 +1112,20 @@ Item {
                             shadowEnabled: !root.frameOwnsConnectedChrome && Theme.elevationEnabled && SettingsData.modalElevationEnabled && Quickshell.env("DMS_DISABLE_LAYER") !== "true" && Quickshell.env("DMS_DISABLE_LAYER") !== "1"
                         }
 
+                        SurfaceHighlight {
+                            width: launcherShadowLayer.width
+                            height: launcherShadowLayer.height
+                            opacity: contentWrapper.publishedOpacity
+                            scale: contentWrapper.scale
+                            x: launcherShadowLayer.x
+                            y: launcherShadowLayer.y
+                            radius: root.cornerRadius
+                            bottomLeftRadius: root.frameBottomRadius
+                            bottomRightRadius: root.frameBottomRadius
+                            strength: root.frameOwnsConnectedChrome ? 0 : Theme.surfaceMaterial(root.materialKind).highlight
+                            z: 100
+                        }
+
                         Item {
                             id: contentWrapper
                             width: parent.width
@@ -1198,6 +1214,7 @@ Item {
 
             WindowBlur {
                 targetWindow: contentWindow
+                materialKind: root.materialKind
                 surfaceColor: root.backgroundColor
                 readonly property real s: Math.min(1, modalContainer.publishedScale)
                 readonly property real op: Math.max(0, Math.min(1, (modalContainer.opacity - 0.06) * 2))
@@ -1335,16 +1352,25 @@ Item {
                 }
 
                 Rectangle {
-                    visible: !root.spotlight
                     anchors.fill: root._fluidMotionActive ? undefined : parent
                     x: root.fluidBody.x
                     y: root.fluidBody.y
                     width: root.fluidBody.width
                     height: root.fluidBody.height
                     radius: root.cornerRadius
+                    bottomLeftRadius: root.frameBottomRadius
+                    bottomRightRadius: root.frameBottomRadius
                     color: "transparent"
                     border.color: BlurService.borderColor
-                    border.width: BlurService.borderWidth
+                    border.width: root.spotlight ? 0 : BlurService.borderWidth
+
+                    SurfaceHighlight {
+                        anchors.fill: parent
+                        radius: parent.radius
+                        bottomLeftRadius: root.frameBottomRadius
+                        bottomRightRadius: root.frameBottomRadius
+                        strength: Theme.surfaceMaterial(root.materialKind).highlight
+                    }
                 }
             }
         }

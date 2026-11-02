@@ -5,11 +5,12 @@ import qs.Widgets
 
 Item {
     id: root
-    readonly property bool isFloatingWindowSurface: impl.item?.isFloatingWindowSurface ?? true
+    readonly property bool isFloatingWindowSurface: false
     readonly property var log: Log.scoped("DModal")
 
     readonly property bool useHyprlandFocusGrab: CompositorService.useHyprlandFocusGrab
     property string layerNamespace: "dms:modal"
+    property string materialKind: "popup"
     property Component content: null
     property Item directContent: null
     property real modalWidth: 400
@@ -27,7 +28,7 @@ Item {
     property real animationOffset: Theme.spacingL
     property list<real> animationEnterCurve: Theme.expressiveCurves.expressiveDefaultSpatial
     property list<real> animationExitCurve: Theme.expressiveCurves.emphasized
-    property color backgroundColor: Theme.floatingWindowSurface
+    property color backgroundColor: Theme.surfaceColor(materialKind)
     property color borderColor: Theme.outlineVariant
     property real borderWidth: 0
     property real cornerRadius: Theme.windowRadius

@@ -11,6 +11,7 @@ PanelWindow {
     id: root
 
     property string layerNamespace: "dms:slideout"
+    property string materialKind: "popup"
     WlrLayershell.namespace: layerNamespace
 
     property bool isVisible: false
@@ -172,7 +173,7 @@ PanelWindow {
         onHoverMoved: (sceneX, sceneY) => PopoutManager.updateHoverCursor(root.surfaceOriginX + sceneX, root.surfaceOriginY + sceneY)
     }
 
-    readonly property bool slideoutBlurActive: root.visible && !root.frameOwnsConnectedChrome && BlurService.enabled && Theme.connectedSurfaceBlurEnabled
+    readonly property bool slideoutBlurActive: root.visible && !root.frameOwnsConnectedChrome
 
     readonly property string _slideoutScreenName: modelData?.name ?? ""
 
@@ -273,7 +274,7 @@ PanelWindow {
                     return Theme.connectedSurfaceColor;
                 if (root.customTransparency >= 0)
                     return Theme.withAlpha(Theme.hostSurface, root.customTransparency);
-                return Theme.readableSurface;
+                return Theme.surfaceColor(root.materialKind);
             }
 
             anchors.top: parent.top
@@ -296,6 +297,12 @@ PanelWindow {
                 radius: Theme.isConnectedEffect ? Theme.connectedSurfaceRadius : Theme.windowRadius
                 border.color: Theme.isConnectedEffect ? Theme.withAlpha(BlurService.borderColor, 0) : BlurService.borderColor
                 border.width: Theme.isConnectedEffect ? 0 : BlurService.borderWidth
+            }
+
+            SurfaceHighlight {
+                anchors.fill: parent
+                radius: Theme.isConnectedEffect ? Theme.connectedSurfaceRadius : Theme.windowRadius
+                strength: root.frameOwnsConnectedChrome ? 0 : Theme.surfaceMaterial(Theme.isConnectedEffect ? "bar" : root.materialKind).highlight
             }
 
             Item {
@@ -388,6 +395,8 @@ PanelWindow {
 
     WindowBlur {
         targetWindow: root
+        materialKind: root.materialKind
+        blurRequested: Theme.isConnectedEffect ? Theme.connectedSurfaceBlurEnabled : Theme.surfaceMaterial(root.materialKind).blur
         blurEnabled: root.slideoutBlurActive
         surfaceColor: contentRect.slideoutSurfaceColor
         blurX: root.slideoutBlurActive ? slideContainer.x + root.slideoutSlideSnapX : 0

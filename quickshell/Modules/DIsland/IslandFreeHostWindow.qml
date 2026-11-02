@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Wayland
 import qs.Common
 import qs.Services
+import "../../Common/SurfaceStyle.js" as SurfaceStyle
 
 PanelWindow {
     id: root
@@ -59,7 +60,8 @@ PanelWindow {
     readonly property real hitPadding: root.dot ? Math.max(0, (root.dotSize - body.currentVisualWidth) / 2) : 0
     // Blur regions are not antialiased and a small circle shows the jagged rim, so blur waits for the morph.
     readonly property bool blurWanted: !root.dot || Math.min(body.currentVisualWidth, body.currentVisualHeight) > root.dotSize * 1.5
-    readonly property bool backgroundBlurRequested: BlurService.requestedFor(barConfig?.blur)
+    readonly property var surfaceProfile: SurfaceStyle.profile(SettingsData.surfaceProfiles, "island")
+    readonly property bool backgroundBlurRequested: surfaceProfile.blur === true
     onBackgroundBlurRequestedChanged: {
         if (backgroundBlurRequested)
             BlurService.probe();
@@ -161,7 +163,7 @@ PanelWindow {
     WlrLayershell.namespace: "dms:dankisland"
     WlrLayershell.layer: LayerShell.fromEnv("DMS_DANKISLAND_LAYER", body.usesOverlayLayer ? WlrLayer.Overlay : WlrLayer.Top)
     WlrLayershell.keyboardFocus: islandChrome.keyboardFocusPolicy
-    BackgroundEffect.blurRegion: root.blurWanted && BlurService.enabledFor(root.barConfig?.blur) && body.surfaceOpacity > 0 && body.surfaceOpacity < 1 ? surfaceBlurRegion : null
+    BackgroundEffect.blurRegion: root.blurWanted && BlurService.available && root.surfaceProfile.blur === true && body.surfaceOpacity >= 0 && body.surfaceOpacity < 1 ? surfaceBlurRegion : null
 
     Region {
         id: surfaceBlurRegion

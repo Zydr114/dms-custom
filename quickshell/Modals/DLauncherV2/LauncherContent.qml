@@ -643,7 +643,7 @@ FocusScope {
                         Layout.minimumWidth: 0
                         Layout.preferredHeight: fileFilterContent.height
                         cornerRadius: Theme.fullRadius(width, height)
-                        backgroundColor: Theme.floatingWindowFieldColor
+                        backgroundColor: Theme.popupFieldColor
                         placeholderText: I18n.tr("ext", "launcher file search placeholder, short for file extension")
                         font.pixelSize: Theme.fontSizeMedium
                         showClearButton: text.length > 0

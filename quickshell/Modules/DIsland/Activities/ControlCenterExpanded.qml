@@ -9,6 +9,7 @@ FocusScope {
     id: root
 
     required property var controller
+    property string surfaceMaterialKind: "island"
     property var effectiveScreen: null
     property real alignedX: 0
     property real alignedY: 0
@@ -53,6 +54,7 @@ FocusScope {
 
         property bool editMode: false
         property string expandedSection: ""
+        readonly property string surfaceMaterialKind: root.surfaceMaterialKind
 
         onEditModeChanged: root.controller.setEditing("controlcenter", editMode, CcMetrics.islandEditRoom)
 

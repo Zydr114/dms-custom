@@ -15,6 +15,7 @@ Item {
     required property real cutoutRightInset
     required property real cutoutRadius
     property color borderColor: Theme.frameSurfaceColor
+    property real highlight: Theme.surfaceMaterial("bar").highlight
 
     ShaderEffect {
         anchors.fill: parent
@@ -25,5 +26,7 @@ Item {
         property real cutoutRadius: root.cutoutRadius
         property vector4d cutout: Qt.vector4d(root.cutoutLeftInset, root.cutoutTopInset, root.width - root.cutoutRightInset, root.height - root.cutoutBottomInset)
         property vector4d surfaceColor: Qt.vector4d(root.borderColor.r, root.borderColor.g, root.borderColor.b, root.borderColor.a)
+        property vector4d highlightColor: Qt.vector4d(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, root.highlight)
+        property real lineWidth: Theme.outlineWidth
     }
 }

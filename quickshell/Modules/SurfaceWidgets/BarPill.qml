@@ -28,8 +28,11 @@ Item {
     property var backgroundOpacity: null
     property string blurMode: "inherit"
     property var blurBarWindow: null
-    readonly property real backgroundAlpha: SurfaceStyle.opacity(backgroundOpacity, SettingsData.barWidgetTransparency(barConfig))
-    readonly property bool surfaceBlurEnabled: BlurService.enabledFor(blurMode, blurBarWindow?.backgroundBlurEnabled ?? BlurService.enabled) === true
+    property var materialProfile: blurBarWindow?.surfaceProfile ?? SurfaceStyle.profile(SettingsData.surfaceProfiles, SettingsData.isIslandBarConfig(barConfig) ? "island" : "bar")
+    property bool materialCovered: blurBarWindow?.ownsBarMaterial ?? false
+    readonly property bool ownsMaterial: !grouped && !materialCovered && !noBackground
+    readonly property real backgroundAlpha: ownsMaterial ? materialProfile.opacity : materialProfile.foregroundOpacity * Theme.stateLayerDrag
+    readonly property bool surfaceBlurEnabled: ownsMaterial && BlurService.available && materialProfile.blur === true
     property alias content: contentLoader.sourceComponent
     property bool isVerticalOrientation: axis?.isVertical ?? false
     property bool isFirst: false
@@ -101,15 +104,12 @@ Item {
         }
     }
     readonly property color defaultFillColor: {
-        if (noBackground)
+        if (noBackground || grouped)
             return "transparent";
-        if (grouped)
-            return Theme.withAlpha(groupContext.tone === "primary" ? Theme.primaryContainer : Theme.surfaceContainerHigh, backgroundAlpha);
-        const base = BarMetrics.widgetFill(barConfig);
-        return backgroundOpacity == null ? base : Theme.withAlpha(base, backgroundAlpha);
+        return Theme.withAlpha(Theme.widgetBaseBackgroundColor, backgroundAlpha);
     }
     property color fillColor: defaultFillColor
-    readonly property bool shadowEnabled: !grouped && barConfig?.island === true && !SettingsData.islandSetting(barConfig, "islandSatelliteBackground") && !noBackground && fillColor.a > 0 && Theme.elevationEnabled && SettingsData.barElevationEnabled
+    readonly property bool shadowEnabled: ownsMaterial && barConfig?.island === true && !SettingsData.islandSetting(barConfig, "islandSatelliteBackground") && !noBackground && fillColor.a > 0 && Theme.elevationEnabled && SettingsData.barElevationEnabled
     readonly property string autoBarShadowDirection: axis?.edge ?? "top"
     readonly property string effectiveShadowDirection: Theme.elevationLightDirection === "autoBar" ? autoBarShadowDirection : Theme.elevationLightDirection
 
@@ -300,6 +300,16 @@ Item {
                     bottomLeftRadius: root.isVerticalOrientation ? segment.endRadiusA : segment.startRadiusB
                     bottomRightRadius: segment.endRadiusB
                     color: root.fillColor
+                }
+
+                SurfaceHighlight {
+                    anchors.fill: fill
+                    visible: root.ownsMaterial && root.materialProfile.highlight > 0
+                    strength: root.materialProfile.highlight
+                    topLeftRadius: fill.topLeftRadius
+                    topRightRadius: fill.topRightRadius
+                    bottomLeftRadius: fill.bottomLeftRadius
+                    bottomRightRadius: fill.bottomRightRadius
                 }
 
                 StateLayer {

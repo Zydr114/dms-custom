@@ -105,6 +105,7 @@ Item {
     readonly property bool isClosing: impl.item ? (impl.item.isClosing ?? false) : false
     readonly property real dpr: impl.item ? impl.item.dpr : 1
     readonly property color surfaceColor: impl.item?.usesConnectedSurfaceChrome ? Theme.connectedSurfaceColor : Theme.readableSurface
+    readonly property string surfaceMaterialKind: impl.item?.usesConnectedSurfaceChrome ? "bar" : "popup"
     readonly property real screenWidth: impl.item ? impl.item.screenWidth : 0
     readonly property real screenHeight: impl.item ? impl.item.screenHeight : 0
     readonly property real alignedX: impl.item ? impl.item.alignedX : 0

@@ -11,7 +11,7 @@ Rectangle {
 
     implicitHeight: hints.implicitHeight + Theme.spacingM * 2
     radius: Theme.cornerRadius
-    color: Theme.floatingWindowNestedSurface
+    color: Theme.foregroundColor(Theme.cardSurface, Theme.isFloatingWindow(keyboardHints))
     border.color: Theme.primary
     border.width: 2
     opacity: visible ? 1 : 0

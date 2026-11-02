@@ -118,7 +118,9 @@ Singleton {
     readonly property int overlayZ: 10000
     readonly property real popupEnterScale: 0.92
     readonly property color dialogColor: Theme.foregroundColor(Theme.hostSurface)
-    readonly property bool hideCoveredContent: BlurService.enabled && Theme.connectedSurfaceBlurEnabled && dialogColor.a < 1
+    function hideCoveredContentFor(kind) {
+        return BlurService.available && Theme.surfaceMaterial(kind).blur && dialogColor.a < 1;
+    }
 
     readonly property color tileActiveColor: Theme.ccTileActiveBg
     readonly property color tileActiveContent: Theme.ccTileActiveText

@@ -5,6 +5,7 @@ import Quickshell.Wayland
 import Quickshell.Hyprland
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 Scope {
     id: overviewScope
@@ -30,6 +31,7 @@ Scope {
                 id: root
                 required property var modelData
                 readonly property HyprlandMonitor monitor: Hyprland.monitorFor(root.screen)
+                readonly property OverviewWidget overviewContent: overviewLoader.item as OverviewWidget
                 property bool monitorIsFocused: (Hyprland.focusedMonitor?.id == monitor?.id)
                 property bool grabArmed: false
 
@@ -41,6 +43,19 @@ Scope {
                 screen: modelData
                 visible: overviewScope.overviewOpen
                 color: "transparent"
+
+                WindowBlur {
+                    targetWindow: root
+                    blurEnabled: root.visible && contentContainer.opacity > 0
+                    surfaceColor: Theme.readableSurface
+                    readonly property real scaleValue: Math.max(0, contentContainer.scale)
+                    readonly property Item body: root.overviewContent?.materialBody ?? null
+                    blurX: contentAnchor.x + contentContainer.x + contentContainer.width * (1 - scaleValue) / 2 + (body?.x ?? 0) * scaleValue
+                    blurY: contentAnchor.y + contentContainer.y + contentContainer.height * (1 - scaleValue) / 2 + (body?.y ?? 0) * scaleValue
+                    blurWidth: body ? body.width * scaleValue : 0
+                    blurHeight: body ? body.height * scaleValue : 0
+                    blurRadius: Theme.cornerRadius * scaleValue
+                }
 
                 WlrLayershell.namespace: "dms:workspace-overview"
                 WlrLayershell.layer: WlrLayer.Overlay

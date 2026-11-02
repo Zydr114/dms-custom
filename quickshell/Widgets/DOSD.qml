@@ -9,6 +9,7 @@ PanelWindow {
     readonly property var log: Log.scoped("DOSD")
 
     property string blurNamespace: "dms:osd"
+    property string materialKind: "popup"
     WlrLayershell.namespace: blurNamespace
 
     property alias content: contentLoader.sourceComponent
@@ -152,6 +153,7 @@ PanelWindow {
 
     WindowBlur {
         targetWindow: root
+        materialKind: root.materialKind
         surfaceColor: Theme.withAlpha(root.surfaceColor, osdContainer.popupSurfaceAlpha)
         blurX: shadowBuffer
         blurY: shadowBuffer
@@ -338,7 +340,7 @@ PanelWindow {
         scale: osdScaleSpring.value
 
         property bool childHovered: false
-        readonly property real popupSurfaceAlpha: Theme.popupTransparency
+        readonly property real popupSurfaceAlpha: Theme.surfaceMaterial(root.materialKind).opacity
 
         ElevationShadow {
             id: bgShadowLayer
@@ -351,6 +353,12 @@ PanelWindow {
             borderColor: Theme.outlineVariant
             borderWidth: 0
             shadowEnabled: Theme.elevationEnabled && SettingsData.popoutElevationEnabled && Quickshell.env("DMS_DISABLE_LAYER") !== "true" && Quickshell.env("DMS_DISABLE_LAYER") !== "1"
+        }
+
+        SurfaceHighlight {
+            anchors.fill: parent
+            radius: root.surfaceRadius
+            strength: Theme.surfaceMaterial(root.materialKind).highlight
         }
 
         MouseArea {

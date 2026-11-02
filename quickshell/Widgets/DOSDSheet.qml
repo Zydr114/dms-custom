@@ -11,6 +11,7 @@ PanelWindow {
     id: root
 
     required property var host
+    readonly property string materialKind: host.materialKind ?? "popup"
 
     property bool opened: false
     property bool closing: false
@@ -158,7 +159,8 @@ PanelWindow {
 
     WindowBlur {
         targetWindow: root
-        surfaceColor: Theme.withAlpha(root.host.surfaceColor, Theme.popupTransparency)
+        materialKind: root.materialKind
+        surfaceColor: Theme.withAlpha(root.host.surfaceColor, Theme.surfaceMaterial(root.materialKind).opacity)
         blurX: surface.x
         blurY: surface.y
         blurWidth: surface.opacity < 1 ? 0 : surface.width
@@ -209,10 +211,16 @@ PanelWindow {
                 level: Theme.elevationLevel2
                 fallbackOffset: Theme.spacingXS
                 targetRadius: root.surfaceRadius
-                targetColor: Theme.withAlpha(root.host.surfaceColor, Theme.popupTransparency)
+                targetColor: Theme.withAlpha(root.host.surfaceColor, Theme.surfaceMaterial(root.materialKind).opacity)
                 borderColor: Theme.outlineVariant
                 borderWidth: 0
                 shadowEnabled: Theme.elevationEnabled && SettingsData.popoutElevationEnabled && Quickshell.env("DMS_DISABLE_LAYER") !== "true" && Quickshell.env("DMS_DISABLE_LAYER") !== "1"
+            }
+
+            SurfaceHighlight {
+                anchors.fill: parent
+                radius: root.surfaceRadius
+                strength: Theme.surfaceMaterial(root.materialKind).highlight
             }
 
             MouseArea {

@@ -17,6 +17,7 @@ Item {
     property real panelWidth: CcMetrics.dialogWidth
     property vector4d cornerRadii: Qt.vector4d(Theme.windowRadius, Theme.windowRadius, Theme.windowRadius, Theme.windowRadius)
     property Item backdrop: null
+    property bool hideCoveredContent: CcMetrics.hideCoveredContentFor("popup")
     readonly property real presence: panel.opacity
     default property alias content: contentSlot.data
     property alias showScrollBar: contentFlickable.showScrollBar
@@ -119,8 +120,9 @@ Item {
         Loader {
             anchors.fill: parent
             z: -1
-            active: root.backdrop !== null && root.visible && CcMetrics.hideCoveredContent
+            active: root.backdrop !== null && root.visible && root.hideCoveredContent
             sourceComponent: BackdropBlur {
+                active: root.hideCoveredContent
                 radius: panel.radius
                 sourceItem: root.backdrop
             }

@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Shapes
 import qs.Common
 import qs.Services
+import qs.Widgets
 import qs.Modules.SurfaceWidgets
 import "BarOutline.js" as BarOutline
 
@@ -119,7 +120,7 @@ Item {
             bottomRightRadius: isBottom || isRight ? attachedCornerRadius : freeCornerRadius
         })
 
-    visible: !frameShapesBar
+    visible: !frameShapesBar && barWindow.materialBackgroundEnabled
     anchors.fill: parent
     anchors.leftMargin: -(axis.isVertical ? (isRight ? crossWing : 0) : alongWing)
     anchors.rightMargin: -(axis.isVertical ? (isLeft ? crossWing : 0) : alongWing)
@@ -219,6 +220,18 @@ Item {
         x: Math.max(0, root.axis.isVertical ? motion.currentOffsetCross : (root.alongWings ? motion.currentOffsetAlong : 0))
         y: Math.max(0, root.axis.isVertical ? (root.alongWings ? motion.currentOffsetAlong : 0) : motion.currentOffsetCross)
         color: root.barWindow._bgColor
+    }
+
+    SurfaceHighlight {
+        x: body.x
+        y: body.y
+        width: body.width
+        height: body.height
+        strength: root.barWindow.surfaceProfile.highlight
+        topLeftRadius: body.topLeftRadius
+        topRightRadius: body.topRightRadius
+        bottomLeftRadius: body.bottomLeftRadius
+        bottomRightRadius: body.bottomRightRadius
     }
 
     GothCorner {

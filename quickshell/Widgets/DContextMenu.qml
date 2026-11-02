@@ -19,6 +19,7 @@ Item {
     property Component customContent: null
     property real customContentWidth: 0
     property string layerNamespace: "dms:context-menu"
+    property string materialKind: "popup"
     property real menuMargin: Theme.spacingS
     property real minMenuWidth: Theme.fieldDefaultWidth
     property real itemHeight: Theme.menuItemHeight
@@ -37,7 +38,7 @@ Item {
     property bool keyboardNavigation: false
     readonly property alias contextWindow: menuWindow
     readonly property alias customContentItem: customContentLoader.item
-    readonly property bool blurActive: renderActive && openState && BlurService.enabled
+    readonly property bool blurActive: renderActive && openState && BlurService.available && Theme.surfaceMaterial(materialKind).blur
 
     readonly property real maxMenuWidth: Math.max(0, (targetScreen?.width ?? Theme.launcherWidthMicro) - menuMargin * 2)
     readonly property real maxMenuHeight: Math.max(0, (targetScreen?.height ?? Theme.launcherHeightDefault) - menuMargin * 2)
@@ -244,6 +245,7 @@ Item {
 
         WindowBlur {
             targetWindow: menuWindow
+            materialKind: root.materialKind
             surfaceColor: menuContainer.color
             blurX: root.blurActive ? menuContainer.x + openScaleTransform.origin.x * (1 - menuContainer.openScale) : 0
             blurY: root.blurActive ? menuContainer.y + openScaleTransform.origin.y * (1 - menuContainer.openScale) : 0
@@ -310,10 +312,15 @@ Item {
                 }
                 width: root.effectiveMenuWidth
                 height: root.effectiveMenuHeight
-                color: Theme.readableSurface
+                color: Theme.surfaceColor(root.materialKind)
                 radius: Theme.windowRadius
                 border.color: BlurService.borderColor
                 border.width: BlurService.borderWidth
+                SurfaceHighlight {
+                    anchors.fill: parent
+                    radius: parent.radius
+                    strength: Theme.surfaceMaterial(root.materialKind).highlight
+                }
                 opacity: root.openState ? 1 : 0
                 transform: Scale {
                     id: openScaleTransform

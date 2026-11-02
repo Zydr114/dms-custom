@@ -10,10 +10,11 @@ import "../../Common/FluidGeometry.js" as FluidGeometry
 
 Item {
     id: root
-    readonly property bool isFloatingWindowSurface: !frameOwnsConnectedChrome
+    readonly property bool isFloatingWindowSurface: false
     readonly property var log: Log.scoped("DModalHost")
 
     required property var modalHandle
+    readonly property string materialKind: modalHandle.materialKind ?? "popup"
     property bool connected: true
     property bool _fluidMotionActive: false
     readonly property rect fluidTarget: Qt.rect(0, 0, alignedWidth, alignedHeight)
@@ -546,6 +547,7 @@ Item {
 
         WindowBlur {
             targetWindow: contentWindow
+            materialKind: root.materialKind
             blurEnabled: !root.frameOwnsConnectedChrome
             surfaceColor: root.effectiveBackgroundColor
             readonly property real s: Math.min(1, modalContainer.scaleValue)
@@ -845,6 +847,12 @@ Item {
                             border.color: root.frameOwnsConnectedChrome ? Theme.withAlpha(BlurService.borderColor, 0) : BlurService.borderColor
                             border.width: root.frameOwnsConnectedChrome ? 0 : BlurService.borderWidth
                             z: 100
+
+                            SurfaceHighlight {
+                                anchors.fill: parent
+                                radius: parent.radius
+                                strength: root.frameOwnsConnectedChrome ? 0 : Theme.surfaceMaterial(root.materialKind).highlight
+                            }
                         }
 
                         FocusScope {

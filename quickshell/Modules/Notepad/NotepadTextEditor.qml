@@ -373,7 +373,7 @@ Column {
         height: 48
         visible: searchVisible
         opacity: searchVisible ? 1 : 0
-        color: Theme.floatingWindowNestedSurface
+        color: Theme.foregroundColor(Theme.cardSurface, Theme.isFloatingWindow(root))
         border.width: Theme.layerOutlineWidth
         border.color: Theme.outlineMedium
         radius: Theme.cornerRadius
@@ -495,7 +495,7 @@ Column {
     StyledRect {
         width: parent.width
         height: parent.height - bottomControls.height - Theme.spacingM - (searchVisible ? searchBar.height + Theme.spacingM : 0)
-        color: Theme.withAlpha(Theme.cardSurface, Theme.notepadTransparency)
+        color: Theme.foregroundColor(Theme.cardSurface, Theme.isFloatingWindow(root))
         border.color: Theme.outlineMedium
         border.width: Theme.layerOutlineWidth
         radius: Theme.cornerRadius
@@ -730,7 +730,7 @@ Column {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     height: 36
-                    color: Theme.withAlpha(Theme.cardSurface, Theme.notepadTransparency)
+                    color: Theme.foregroundColor(Theme.cardSurface, Theme.isFloatingWindow(root))
                     border.width: Theme.layerOutlineWidth
                     border.color: Theme.outlineMedium
                     z: 2
@@ -941,7 +941,7 @@ Column {
                 width: Math.min(root.width, 360)
                 height: pathInfoRow.implicitHeight + Theme.spacingS * 2
                 radius: Theme.cornerRadius
-                color: Theme.floatingWindowNestedSurface
+                color: Theme.foregroundColor(Theme.cardSurface, Theme.isFloatingWindow(root))
                 border.color: Theme.outlineMedium
                 border.width: Theme.layerOutlineWidth
                 z: 10

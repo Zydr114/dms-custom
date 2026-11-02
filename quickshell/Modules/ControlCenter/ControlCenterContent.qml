@@ -15,6 +15,8 @@ FocusScope {
     id: root
 
     required property var host
+    readonly property string surfaceMaterialKind: host.surfaceMaterialKind ?? "popup"
+    readonly property bool hideCoveredContent: CcMetrics.hideCoveredContentFor(surfaceMaterialKind)
 
     property bool live: Window.window?.visible ?? false
     property bool audioRefHeld: false
@@ -440,7 +442,7 @@ FocusScope {
 
                 width: parent.width
                 height: Math.max(root.gridHeight, root.heldGridHeight)
-                opacity: CcMetrics.hideCoveredContent ? 1 - root.coveredAmount : 1
+                opacity: root.hideCoveredContent ? 1 - root.coveredAmount : 1
 
                 CcTileGrid {
                     id: widgetGrid
@@ -523,6 +525,7 @@ FocusScope {
         topInset: CcMetrics.sheetPadding
         cornerRadii: root.surfaceCornerRadii
         coverage: Math.max(codecSelectorLoader.item?.presence ?? 0, portSelectorLoader.item?.presence ?? 0)
+        hideCoveredContent: root.hideCoveredContent
         model: widgetModel
         screenName: root.host.triggerScreen?.name || ""
         screenModel: root.host.triggerScreen?.model || ""
@@ -552,6 +555,7 @@ FocusScope {
         active: false
         sourceComponent: BluetoothCodecSelector {
             cornerRadii: root.surfaceCornerRadii
+            hideCoveredContent: root.hideCoveredContent
             onDismissed: Qt.callLater(root.releaseSheet, codecSelectorLoader)
         }
     }
@@ -564,6 +568,7 @@ FocusScope {
         active: false
         sourceComponent: AudioPortSelector {
             cornerRadii: root.surfaceCornerRadii
+            hideCoveredContent: root.hideCoveredContent
             onDismissed: Qt.callLater(root.releaseSheet, portSelectorLoader)
         }
     }

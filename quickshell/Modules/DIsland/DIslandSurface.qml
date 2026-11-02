@@ -7,6 +7,7 @@ import qs.Modules.DDash
 import qs.Modules.DIsland.Activities
 import qs.Services
 import qs.Widgets
+import "../../Common/SurfaceStyle.js" as SurfaceStyle
 
 Item {
     id: root
@@ -27,6 +28,8 @@ Item {
     property string palette: "default"
     property bool highContrast: false
     property real transparency: 1
+    property var materialProfile: SurfaceStyle.profile(SettingsData.surfaceProfiles, "island")
+    property string surfaceMaterialKind: "island"
     property color surfaceBase: Theme.hostSurface
     property string requestedWindow: ""
     property bool freeMode: false
@@ -59,6 +62,7 @@ Item {
     property bool compactBackground: false
     property color compactBackgroundColor: "transparent"
     readonly property bool embedded: root.chrome !== "own"
+    property bool materialCovered: embedded
     readonly property bool chromeless: root.chrome === "none"
 
     readonly property color surfaceColor: {
@@ -75,7 +79,7 @@ Item {
     readonly property bool popupStyled: root.controller.expanded
     readonly property bool borderlessMedia: popupStyled && root.controller.activeActivity === "media" && MediaOptions.borderless
     readonly property real islandOpacity: Math.max(0, Math.min(1, root.transparency))
-    readonly property color effectiveSurfaceColor: root.embedded ? root.bandColor : root.highContrast ? Theme.surfaceContainerHighest : Theme.withAlpha(root.surfaceColor, root.islandOpacity)
+    readonly property color effectiveSurfaceColor: root.materialCovered ? root.bandColor : Theme.withAlpha(root.surfaceColor, root.islandOpacity)
     readonly property real surfaceOpacity: root.effectiveSurfaceColor.a
     readonly property bool shadowEnabled: !root.chromeless && root.surfaceOpacity > 0 && Theme.elevationEnabled && SettingsData.barElevationEnabled
     readonly property string autoBarShadowDirection: root.controller.edge
@@ -387,7 +391,7 @@ Item {
     Loader {
         anchors.fill: island
         z: island.z - 1
-        active: root.shadowEnabled && !root.embedded
+        active: root.shadowEnabled && !root.materialCovered
         sourceComponent: shadowComponent
     }
 
@@ -399,10 +403,10 @@ Item {
         y: root.currentVisualY
         width: root.currentVisualWidth
         height: root.currentVisualHeight
-        // Embedded, the band already paints the in-band strip; overhangFill draws the rest, so a translucent band never double-alphas.
-        color: root.embedded ? "transparent" : root.effectiveSurfaceColor
-        border.width: root.notificationAccentColor !== "transparent" ? Theme.outlineWidthFocused : root.embedded ? 0 : root.highContrast ? Theme.outlineWidthFocused : root.borderlessMedia || root.notch ? 0 : root.popupStyled ? BlurService.borderWidth : Theme.outlineWidth
-        border.color: root.notificationAccentColor !== "transparent" ? root.notificationAccentColor : root.highContrast ? Theme.outlineStrong : root.popupStyled ? BlurService.borderColor : Theme.outlineLight
+        // A covered island paints only the overhang, keeping the band from receiving two translucent fills.
+        color: root.materialCovered ? "transparent" : root.effectiveSurfaceColor
+        border.width: root.notificationAccentColor !== "transparent" ? Theme.outlineWidthFocused : root.materialCovered ? 0 : root.highContrast ? Theme.outlineWidthFocused : root.borderlessMedia || root.notch ? 0 : Theme.outlineWidth
+        border.color: root.notificationAccentColor !== "transparent" ? root.notificationAccentColor : root.highContrast ? Theme.outlineStrong : Theme.outlineLight
 
         Behavior on color {
             ColorAnimation {
@@ -416,6 +420,16 @@ Item {
                 duration: root.reducedMotion ? 0 : Theme.shortDuration
                 easing.type: Easing.OutCubic
             }
+        }
+
+        SurfaceHighlight {
+            anchors.fill: parent
+            visible: !root.materialCovered && root.materialProfile.highlight > 0
+            strength: root.materialProfile.highlight
+            topLeftRadius: island.topLeftRadius
+            topRightRadius: island.topRightRadius
+            bottomLeftRadius: island.bottomLeftRadius
+            bottomRightRadius: island.bottomRightRadius
         }
 
         Rectangle {
@@ -537,7 +551,7 @@ Item {
     }
 
     // crossExtent is the band here, so the overhang is how far the sheet has left the bar.
-    readonly property real embeddedOverhang: !root.embedded || root.chromeless ? 0 : Math.max(0, root.farEdge ? -(root.isVertical ? root.currentVisualX : root.currentVisualY) : (root.isVertical ? root.currentVisualX + root.currentVisualWidth : root.currentVisualY + root.currentVisualHeight) - root.crossExtent)
+    readonly property real embeddedOverhang: !root.materialCovered || !root.embedded || root.chromeless ? 0 : Math.max(0, root.farEdge ? -(root.isVertical ? root.currentVisualX : root.currentVisualY) : (root.isVertical ? root.currentVisualX + root.currentVisualWidth : root.currentVisualY + root.currentVisualHeight) - root.crossExtent)
     readonly property real joinRadius: root.notch ? root.notchRadius : Math.min(Theme.connectedCornerRadius, root.embeddedOverhang)
     // Depth is capped so the flare never passes the pill's far corner; the slider still drives the along radius.
     readonly property real joinCrossRadius: root.notch ? Math.max(0, Math.min(root.joinRadius, root.controller.compactFaceThickness - Math.min(root.controller.compactFaceThickness / 2, root.controller.pillRadius))) : root.joinRadius
@@ -549,7 +563,7 @@ Item {
     Loader {
         id: joinChrome
 
-        active: (root.embedded && !root.chromeless) || root.notch
+        active: (root.materialCovered && root.embedded && !root.chromeless) || root.notch
         z: island.z - 1
         sourceComponent: Item {
             readonly property alias leadingCorner: leadingCorner
@@ -734,6 +748,7 @@ Item {
 
         ControlCenterExpanded {
             controller: root.controller
+            surfaceMaterialKind: root.surfaceMaterialKind
             onWindowRequested: windowName => root.openAfterCollapse(windowName)
             effectiveScreen: root.effectiveScreen
             alignedX: root.targetScreenX

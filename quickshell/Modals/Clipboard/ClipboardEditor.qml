@@ -298,7 +298,7 @@ Item {
             height: Math.max(Theme.fontSizeMedium * 8, parent.height - editorHeader.height - editorActions.height - PopoutMetrics.contentGap * 2)
             leftIconName: "edit"
             placeholderText: I18n.tr("Edit clipboard text")
-            backgroundColor: Theme.floatingWindowFieldColor
+            backgroundColor: Theme.isFloatingWindow(root) ? Theme.floatingWindowFieldColor : Theme.popupFieldColor
             normalBorderColor: Theme.outlineMedium
             focusedBorderColor: Theme.primary
             keyForwardTargets: [editorKeyHandler]
@@ -375,7 +375,7 @@ Item {
 
             background: StyledRect {
                 radius: Theme.windowRadius
-                color: Theme.floatingWindowNestedSurface
+                color: Theme.foregroundColor(Theme.cardSurface, Theme.isFloatingWindow(root))
                 border.color: Theme.outlineMedium
                 border.width: Theme.layerOutlineWidth
             }

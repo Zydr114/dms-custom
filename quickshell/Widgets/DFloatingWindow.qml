@@ -8,10 +8,11 @@ FloatingWindow {
     id: root
 
     readonly property bool isFloatingWindowSurface: true
+    property string materialKind: "settings"
 
     default property alias content: contentItem.data
 
-    property color surfaceColor: Theme.floatingWindowSurface
+    property color surfaceColor: Theme.surfaceColor(materialKind)
     property bool contentVisible: true
 
     // A placeholder screen (no outputs left) is 0x0; a size derived from it is a zero geometry and the compositor drops the connection.
@@ -28,10 +29,17 @@ FloatingWindow {
         visible: root.contentVisible
     }
 
-    // No surfaceColor gate: compositor window rules can make this window translucent.
+    SurfaceHighlight {
+        anchors.fill: parent
+        strength: Theme.surfaceMaterial(root.materialKind).highlight
+        visible: root.contentVisible && strength > 0
+    }
+
     WindowBlur {
         targetWindow: root
+        materialKind: root.materialKind
         blurEnabled: root.contentVisible
+        surfaceColor: root.surfaceColor
         blurX: 0
         blurY: 0
         blurWidth: root.visible ? root.width : 0

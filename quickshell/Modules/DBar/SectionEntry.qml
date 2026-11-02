@@ -1,4 +1,6 @@
 import QtQuick
+import qs.Common
+import "../../Common/SurfaceStyle.js" as SurfaceStyle
 import "OverflowLayout.js" as OverflowLayout
 
 Item {
@@ -76,7 +78,9 @@ Item {
             sectionContext: root.sectionContext
             widgetData: root.itemData
             occurrenceOrder: root.occurrenceOrder
-            groupContext: root.groupContext
+            groupContext: root.inOverflow ? null : root.groupContext
+            materialProfile: root.inOverflow ? SurfaceStyle.profile(SettingsData.surfaceProfiles, "popup") : root.sectionContext.blurBarWindow?.surfaceProfile ?? SurfaceStyle.profile(SettingsData.surfaceProfiles, "bar")
+            materialCovered: root.inOverflow || (root.sectionContext.blurBarWindow?.ownsBarMaterial ?? false)
             widgetThickness: root.groupConfig ? root.sectionContext.groupMetrics(root.groupConfig).widgetThickness : root.sectionContext.widgetThickness
             surfaceThickness: root.groupConfig ? root.sectionContext.groupMetrics(root.groupConfig).widgetThickness : root.sectionContext.surfaceThickness
             surfaceOutlineThickness: root.sectionContext.outlineThickness

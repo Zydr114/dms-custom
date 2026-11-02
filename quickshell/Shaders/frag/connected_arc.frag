@@ -13,6 +13,8 @@ layout(std140, binding = 0) uniform buf {
     float cutoutRadius;
     vec4 cutout;        // inner cutout edges in px: x=left y=top z=right w=bottom
     vec4 surfaceColor;  // straight (non-premultiplied) rgba
+    vec4 highlightColor;
+    float lineWidth;
     vec4 shadowColor;   // straight rgba; a = 0 disables both shadow terms
     vec4 shadowParam;   // key: x = blur px, y = spread px, z,w = offset px
     vec4 ambientParam;  // ambient: x = blur px, y = spread px, z = alpha
@@ -115,5 +117,9 @@ void main() {
         float sh = 1.0 - (1.0 - covK * ubuf.shadowColor.a) * (1.0 - covA * ubuf.ambientParam.z);
         col += vec4(ubuf.shadowColor.rgb, 1.0) * (sh * (1.0 - col.a));
     }
-    fragColor = col * (ubuf.surfaceColor.a * ubuf.qt_Opacity);
+    vec4 base = col * (ubuf.surfaceColor.a * ubuf.qt_Opacity);
+    float inner = 1.0 - smoothstep(-fw, fw, d + ubuf.lineWidth);
+    float light = mix(1.0, 0.2, qt_TexCoord0.y);
+    float highlightAlpha = max(0.0, cov - inner) * light * ubuf.highlightColor.a * ubuf.qt_Opacity;
+    fragColor = vec4(ubuf.highlightColor.rgb * highlightAlpha, highlightAlpha) + base * (1.0 - highlightAlpha);
 }

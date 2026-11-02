@@ -16,6 +16,7 @@ PanelWindow {
     property real dockVisibleHeight: 40
     property int margin: 10
     property string layerNamespace: "dms:dock-context-menu"
+    property string materialKind: "popup"
     property real menuMaxWidth: 400
     property real menuMinWidth: 180
 
@@ -74,6 +75,7 @@ PanelWindow {
 
     WindowBlur {
         targetWindow: root
+        materialKind: root.materialKind
         surfaceColor: menuContainer.color
         blurX: menuContainer.x
         blurY: menuContainer.y
@@ -123,10 +125,15 @@ PanelWindow {
 
         width: Math.min(root.menuMaxWidth, Math.max(root.menuMinWidth, menuColumn.implicitWidth + Theme.spacingS * 2))
         height: menuColumn.implicitHeight + Theme.spacingS * 2
-        color: Theme.floatingSurface
+        color: Theme.surfaceColor(root.materialKind)
         radius: Theme.windowRadius
         border.color: BlurService.borderColor
         border.width: BlurService.borderWidth
+        SurfaceHighlight {
+            anchors.fill: parent
+            radius: parent.radius
+            strength: Theme.surfaceMaterial(root.materialKind).highlight
+        }
 
         opacity: root.visible ? 1 : 0
         visible: opacity > 0

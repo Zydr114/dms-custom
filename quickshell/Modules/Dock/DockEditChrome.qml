@@ -2,6 +2,7 @@ import QtQuick
 import qs.Common
 import qs.Services
 import qs.DCommon.Widgets
+import qs.Widgets
 
 Rectangle {
     id: root
@@ -23,6 +24,12 @@ Rectangle {
     color: Theme.readableSurface
     border.color: BlurService.borderColor
     border.width: BlurService.borderWidth
+
+    SurfaceHighlight {
+        anchors.fill: parent
+        radius: root.radius
+        strength: Theme.popupMaterial.highlight
+    }
 
     MouseArea {
         anchors.fill: parent

@@ -100,11 +100,6 @@ Singleton {
         return Theme.windowRadius;
     }
 
-    function widgetFill(barConfig) {
-        const transparency = SettingsData.barWidgetTransparency(barConfig);
-        return Theme.widgetBackgroundHasAlpha ? Theme.blendAlpha(Theme.widgetBaseBackgroundColor, transparency) : Theme.withAlpha(Theme.widgetBaseBackgroundColor, transparency);
-    }
-
     function compactFaceThickness(compact) {
         return compact + (compact < islandLargeFaceCompact ? islandFaceBloomSmall : islandFaceBloomLarge);
     }

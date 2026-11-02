@@ -21,6 +21,7 @@ FocusScope {
     property real topInset: 0
     property vector4d cornerRadii: Qt.vector4d(Theme.windowRadius, Theme.windowRadius, Theme.windowRadius, Theme.windowRadius)
     property real coverage: 0
+    property bool hideCoveredContent: CcMetrics.hideCoveredContentFor("popup")
     property var runningToplevels: []
 
     signal dismissed
@@ -247,7 +248,7 @@ FocusScope {
 
             anchors.fill: parent
             anchors.margins: CcMetrics.detailDialogPadding
-            opacity: CcMetrics.hideCoveredContent ? 1 - root.coverage : 1
+            opacity: root.hideCoveredContent ? 1 - root.coverage : 1
 
             Item {
                 id: header

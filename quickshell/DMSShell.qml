@@ -1070,7 +1070,6 @@ Item {
             edgeGap: SettingsData.notepadEffectiveEdgeGap
             frameSurfaceEnabled: true
             slideEdge: SettingsData.notepadSlideoutSide
-            customTransparency: Theme.notepadTransparency
 
             onIsVisibleChanged: {
                 if (isVisible)

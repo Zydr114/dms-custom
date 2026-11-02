@@ -15,10 +15,12 @@ PanelWindow {
 
     readonly property bool connectedFrameMode: CompositorService.usesConnectedFrameChromeForScreen(win.screen)
     readonly property bool inlineHeightAnimating: heightMotion.running
+    property string materialKind: "popup"
 
     WindowBlur {
         targetWindow: win
-        surfaceColor: Theme.notificationFloatingSurface
+        materialKind: win.materialKind
+        surfaceColor: Theme.surfaceColor(win.materialKind)
         readonly property real s: Math.min(1, content.scale) * Math.max(0, content.opacity)
         readonly property real innerW: Math.max(0, content.width - content.cardInset * 2)
         readonly property real innerH: Math.max(0, content.height - content.cardInset * 2)
@@ -689,7 +691,7 @@ PanelWindow {
             sourceWidth: Math.max(0, content.width - (content.cardInset * 2))
             sourceHeight: Math.max(0, content.height - (content.cardInset * 2))
             targetRadius: win.connectedFrameMode ? Theme.connectedSurfaceRadius : NotificationMetrics.popupRadius
-            targetColor: Theme.notificationFloatingSurface
+            targetColor: win.connectedFrameMode ? "transparent" : Theme.surfaceColor(win.materialKind)
             borderColor: win.notificationData && win.notificationData.urgency === NotificationUrgency.Critical ? Theme.withAlpha(Theme.primary, Theme.stateLayerPressed) : Theme.outlineVariant
             borderWidth: win.notificationData && win.notificationData.urgency === NotificationUrgency.Critical ? Theme.outlineWidthFocused : 0
         }
@@ -702,6 +704,12 @@ PanelWindow {
             border.color: win.connectedFrameMode ? Theme.withAlpha(BlurService.borderColor, 0) : BlurService.borderColor
             border.width: win.connectedFrameMode ? 0 : BlurService.borderWidth
             z: 100
+
+            SurfaceHighlight {
+                anchors.fill: parent
+                radius: parent.radius
+                strength: win.connectedFrameMode ? 0 : Theme.surfaceMaterial(win.materialKind).highlight
+            }
         }
 
         Rectangle {

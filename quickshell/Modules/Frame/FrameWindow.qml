@@ -330,6 +330,7 @@ PanelWindow {
     readonly property real _effectiveModalFarStartCcr: win._modalRadii.farStart
     readonly property real _effectiveModalFarEndCcr: win._modalRadii.farEnd
     readonly property real _effectiveModalFarExtent: Math.max(win._effectiveModalFarStartCcr, win._effectiveModalFarEndCcr)
+    readonly property var surfaceProfile: Theme.surfaceMaterial("bar")
     readonly property color _surfaceColor: Theme.frameSurfaceColor
     readonly property real _surfaceRadius: Theme.connectedSurfaceRadius
     readonly property real _seamOverlap: Theme.hairline(win._dpr)
@@ -498,7 +499,14 @@ PanelWindow {
         return Math.max(0, Math.min(requested, maxRadius));
     }
 
-    readonly property bool _blurSurfacesActive: BlurService.enabled && SettingsData.frameBlurEnabled && win._frameActive
+    readonly property bool _blurRequested: win.surfaceProfile.blur === true
+    readonly property bool _blurProbeWanted: win._blurRequested && win._frameActive && win.visible
+    readonly property bool _blurSurfacesActive: win._blurRequested && BlurService.available && win._surfaceColor.a < 1 && win._frameActive
+    on_BlurProbeWantedChanged: {
+        if (win._blurProbeWanted)
+            BlurService.probe();
+    }
+    on_BlurSurfacesActiveChanged: win._scheduleBlurRebuild()
     readonly property int _blurCutoutCompensation: Theme.frameSurfaceColor.a <= 0.2 ? 1 : 0
     readonly property int _blurCutoutLeft: Math.max(0, win.cutoutLeftInset - win._blurCutoutCompensation)
     readonly property int _blurCutoutTop: Math.max(0, win.cutoutTopInset - win._blurCutoutCompensation)
@@ -966,7 +974,7 @@ PanelWindow {
 
     function _buildBlur(forceRepublish) {
         try {
-            if (!BlurService.enabled || !SettingsData.frameBlurEnabled || !win._frameActive || !win.visible) {
+            if (!win._blurSurfacesActive || !win.visible) {
                 win.BackgroundEffect.blurRegion = null;
                 return;
             }
@@ -1025,38 +1033,18 @@ PanelWindow {
 
     Connections {
         target: SettingsData
-        function onFrameBlurEnabledChanged() {
-            win._scheduleBlurRebuild();
-        }
-        function onFrameEnabledChanged() {
-            win._scheduleBlurRebuild();
-        }
-        function onFrameThicknessChanged() {
-            win._scheduleBlurRebuild();
-        }
-        function onFrameBarSizeChanged() {
-            win._scheduleBlurRebuild();
-        }
-        function onFrameRoundingChanged() {
-            win._scheduleBlurRebuild();
-        }
-        function onFrameScreenPreferencesChanged() {
-            win._scheduleBlurRebuild();
-        }
         function onBarConfigsChanged() {
-            win._scheduleBlurRebuild();
-        }
-        function onConnectedFrameModeActiveChanged() {
-            win._scheduleBlurRebuild();
-        }
-        function onFrameCloseGapsChanged() {
             win._scheduleBlurRebuild();
         }
     }
 
-    readonly property bool blurServiceEnabled: BlurService.enabled
-
-    onBlurServiceEnabledChanged: _scheduleBlurRebuild()
+    onCutoutTopInsetChanged: win._scheduleBlurRebuild()
+    onCutoutBottomInsetChanged: win._scheduleBlurRebuild()
+    onCutoutLeftInsetChanged: win._scheduleBlurRebuild()
+    onCutoutRightInsetChanged: win._scheduleBlurRebuild()
+    onCutoutRadiusChanged: win._scheduleBlurRebuild()
+    on_BlurCutoutCompensationChanged: win._scheduleBlurRebuild()
+    on_ConnectedActiveChanged: win._scheduleBlurRebuild()
 
     onVisibleChanged: {
         if (visible) {
@@ -1083,6 +1071,8 @@ PanelWindow {
 
     Component.onCompleted: {
         KeyboardFocus.registerBarWindow(win);
+        if (win._blurProbeWanted)
+            BlurService.probe();
         win._scheduleBlurRebuild();
         win._scheduleSurfaceRefresh();
     }
@@ -1101,6 +1091,8 @@ PanelWindow {
         cutoutLeftInset: win.cutoutLeftInset
         cutoutRightInset: win.cutoutRightInset
         cutoutRadius: win.cutoutRadius
+        borderColor: win._surfaceColor
+        highlight: win.surfaceProfile.highlight
     }
 
     ShaderEffect {
@@ -1116,6 +1108,8 @@ PanelWindow {
         property real cutoutRadius: win.cutoutRadius
         property vector4d cutout: Qt.vector4d(win.cutoutLeftInset, win.cutoutTopInset, win.width - win.cutoutRightInset, win.height - win.cutoutBottomInset)
         property vector4d surfaceColor: Qt.vector4d(win._surfaceColor.r, win._surfaceColor.g, win._surfaceColor.b, win._surfaceColor.a)
+        property vector4d highlightColor: Qt.vector4d(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, win.surfaceProfile.highlight)
+        property real lineWidth: Theme.outlineWidth
         property vector4d shadowColor: Qt.vector4d(_shadowTint.r, _shadowTint.g, _shadowTint.b, win._elevationShadow ? _shadowTint.a : 0)
         property vector4d shadowParam: Qt.vector4d(Math.max(0, _level.blurPx), Math.max(0, _level.spreadPx), Theme.elevationOffsetXFor(_level, Theme.elevationLightDirection, 4), Theme.elevationOffsetYFor(_level, Theme.elevationLightDirection, 4))
         property vector4d ambientParam: Qt.vector4d(_ambient.blurPx, _ambient.spreadPx, win._elevationShadow ? _ambient.alpha : 0, 0)

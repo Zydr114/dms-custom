@@ -15,6 +15,7 @@ Item {
     readonly property real dpr: CompositorService.getScreenScale(panelWindow.screen)
     readonly property int workspacesShown: SettingsData.overviewRows * SettingsData.overviewColumns
     readonly property alias windowMenuWindow: windowMenu.contextWindow
+    readonly property Item materialBody: overviewBackground
 
     function openWindowMenu(item, x, y) {
         const address = item.windowData?.address;
@@ -282,7 +283,7 @@ Item {
         implicitWidth: workspaceGrid.implicitWidth + padding * 2
         implicitHeight: workspaceGrid.implicitHeight + padding * 2
         radius: Theme.cornerRadius
-        color: Theme.hostSurface
+        color: Theme.readableSurface
 
         ElevationShadow {
             anchors.fill: parent
@@ -290,9 +291,15 @@ Item {
             level: Theme.elevationLevel2
             fallbackOffset: 4
             targetRadius: Theme.cornerRadius
-            targetColor: Theme.hostSurface
+            targetColor: "transparent"
             shadowOpacity: Theme.elevationLevel2 && Theme.elevationLevel2.alpha !== undefined ? Theme.elevationLevel2.alpha : 0.25
             shadowEnabled: Theme.elevationEnabled
+        }
+
+        SurfaceHighlight {
+            anchors.fill: parent
+            radius: overviewBackground.radius
+            strength: Theme.popupMaterial.highlight
         }
 
         Item {

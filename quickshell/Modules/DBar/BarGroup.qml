@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import qs.Common
 import qs.Services
+import qs.Widgets
 import "../../Common/SurfaceStyle.js" as SurfaceStyle
 
 Rectangle {
@@ -18,8 +19,10 @@ Rectangle {
     property real crossPosition: 0
     property real crossSize: 0
     readonly property real blurRadius: radius
-    readonly property bool blurEnabled: BlurService.enabledFor(groupConfig?.blur, blurBarWindow?.backgroundBlurEnabled ?? BlurService.enabled) === true
-    readonly property real backgroundAlpha: SurfaceStyle.opacity(groupConfig?.backgroundOpacity, SettingsData.barTransparency(barConfig))
+    property var materialProfile: blurBarWindow?.surfaceProfile ?? SurfaceStyle.profile(SettingsData.surfaceProfiles, "bar")
+    property bool materialCovered: blurBarWindow?.ownsBarMaterial ?? false
+    readonly property bool blurEnabled: !materialCovered && BlurService.available && materialProfile.blur === true
+    readonly property real backgroundAlpha: materialCovered ? materialProfile.foregroundOpacity * Theme.stateLayerDrag : materialProfile.opacity
     readonly property color surfaceColor: groupConfig?.tone === "primary" ? Theme.blend(Theme.surfaceContainerLow, Theme.primaryContainer, Theme.stateLayerDrag) : Theme.surfaceContainerLow
 
     x: isVertical ? crossPosition : alongPosition
@@ -31,6 +34,13 @@ Rectangle {
     color: Theme.withAlpha(surfaceColor, backgroundAlpha)
     border.width: Theme.outlineWidth
     border.color: Theme.outlineLight
+
+    SurfaceHighlight {
+        anchors.fill: parent
+        visible: !root.materialCovered && root.materialProfile.highlight > 0
+        strength: root.materialProfile.highlight
+        radius: root.radius
+    }
 
     property var registeredWindow: null
     readonly property var targetWindow: SurfaceStyle.needsBlur(blurEnabled, color.a) && visible && !!blurBarWindow?.registerBlurWidget ? blurBarWindow : null

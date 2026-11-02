@@ -149,7 +149,7 @@ DModal {
                     width: parent.width
                     height: 50
                     radius: Theme.cornerRadius
-                    color: Theme.floatingWindowFieldColor
+                    color: Theme.isFloatingWindow(root) ? Theme.floatingWindowFieldColor : Theme.popupFieldColor
                     border.color: pinInputField.activeFocus ? Theme.primary : Theme.outlineStrong
                     border.width: pinInputField.activeFocus ? 2 : 1
                     visible: requestType === "pin"
@@ -184,7 +184,7 @@ DModal {
                     width: parent.width
                     height: 50
                     radius: Theme.cornerRadius
-                    color: Theme.floatingWindowFieldColor
+                    color: Theme.isFloatingWindow(root) ? Theme.floatingWindowFieldColor : Theme.popupFieldColor
                     border.color: passkeyInputField.activeFocus ? Theme.primary : Theme.outlineStrong
                     border.width: passkeyInputField.activeFocus ? 2 : 1
                     visible: requestType === "passkey"

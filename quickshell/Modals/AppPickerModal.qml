@@ -530,7 +530,7 @@ DModal {
                     width: parent.width
                     height: 52
                     radius: Theme.cornerRadius
-                    color: Theme.floatingWindowNestedSurface
+                    color: Theme.foregroundColor(Theme.cardSurface, Theme.isFloatingWindow(root))
                     border.color: Theme.outlineMedium
                     border.width: Theme.layerOutlineWidth
                     visible: root.showTargetData && root.targetData.length > 0
@@ -556,7 +556,7 @@ DModal {
                         height: 44
                         text: root.editableTargetData
                         keyForwardTargets: [appContent]
-                        backgroundColor: Theme.floatingWindowFieldColor
+                        backgroundColor: Theme.isFloatingWindow(root) ? Theme.floatingWindowFieldColor : Theme.popupFieldColor
                         onTextEdited: root.editableTargetData = text
                         Keys.onLeftPressed: event => {
                             if (cursorPosition === 0)

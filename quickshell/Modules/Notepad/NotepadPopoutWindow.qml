@@ -27,7 +27,6 @@ DFloatingWindow {
     minimumSize: Qt.size(360, 320)
     implicitWidth: 640
     implicitHeight: 760
-    surfaceColor: Theme.notepadWindowSurface
     visible: false
 
     onVisibleChanged: {

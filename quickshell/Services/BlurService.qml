@@ -17,12 +17,12 @@ Singleton {
     property bool _probed: false
     property bool probed: false
     readonly property bool available: compositorSupported
-    readonly property bool blurRequested: SettingsData.blurEnabled ?? false
+    readonly property bool blurRequested: SurfaceStyle.anyBlur(SettingsData.surfaceProfiles)
     onBlurRequestedChanged: {
         if (blurRequested)
             probe();
     }
-    readonly property bool enabled: available && (SettingsData.blurEnabled ?? false)
+    readonly property bool enabled: available && blurRequested
     readonly property int defaultStrength: BlurStrength.defaultReach(CompositorService.configKey)
     readonly property int strength: SettingsData.blurStrength || defaultStrength
 
@@ -47,7 +47,7 @@ Singleton {
     readonly property int borderWidth: (SettingsData.blurBorderEnabled ?? false) ? 1 : 0
 
     function requestedFor(mode, inherited) {
-        return SurfaceStyle.blurRequested(mode, inherited === undefined ? SettingsData.blurEnabled : inherited);
+        return SurfaceStyle.blurRequested(mode, inherited === undefined ? SurfaceStyle.profile(SettingsData.surfaceProfiles, "bar").blur : inherited);
     }
 
     function enabledFor(mode, inherited) {
@@ -55,7 +55,7 @@ Singleton {
     }
 
     function hoverColor(baseColor, hoverAlpha) {
-        if (!enabled)
+        if (!available || !SurfaceStyle.profile(SettingsData.surfaceProfiles, "popup").blur)
             return baseColor;
         return Theme.withAlpha(baseColor, hoverAlpha ?? 0.15);
     }
@@ -63,7 +63,13 @@ Singleton {
     Binding {
         target: Theme
         property: "blurLayersActive"
-        value: root.enabled
+        value: root.available && SurfaceStyle.profile(SettingsData.surfaceProfiles, "popup").blur
+    }
+
+    Binding {
+        target: Theme
+        property: "settingsBlurLayersActive"
+        value: root.available && SurfaceStyle.profile(SettingsData.surfaceProfiles, "settings").blur
     }
 
     Process {

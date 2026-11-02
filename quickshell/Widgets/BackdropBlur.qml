@@ -11,7 +11,7 @@ Item {
     property real radius: Theme.cornerRadius
     property real blurAmount: 1.0
     property int blurMax: 96
-    property bool active: BlurService.enabled
+    property bool active: BlurService.available && Theme.popupMaterial.blur
 
     readonly property bool blurActive: visible && active
 

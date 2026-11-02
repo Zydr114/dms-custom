@@ -7,6 +7,7 @@ import qs.Modules.SurfaceWidgets
 import qs.DCommon.Widgets
 import qs.Widgets
 import "OverflowLayout.js" as OverflowLayout
+import "../../Common/SurfaceStyle.js" as SurfaceStyle
 
 Item {
     id: root
@@ -170,6 +171,8 @@ Item {
                                     groupConfig: root.entries[unit?.sourceIndices[0]]?.groupConfig ?? null
                                     barConfig: root.sectionContext.barConfig
                                     blurBarWindow: null
+                                    materialProfile: SurfaceStyle.profile(SettingsData.surfaceProfiles, "popup")
+                                    materialCovered: true
                                     isVertical: true
                                     alongPosition: unit?.position ?? 0
                                     alongSize: unit?.size ?? 0

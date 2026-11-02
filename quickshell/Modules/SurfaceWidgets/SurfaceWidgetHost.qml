@@ -2,6 +2,7 @@ import QtQuick
 import QtQml.Models
 import qs.Services
 import qs.Common
+import "../../Common/SurfaceStyle.js" as SurfaceStyle
 
 Loader {
     id: root
@@ -46,8 +47,8 @@ Loader {
     property real barSpacing: 4
     property var barConfig: null
     property var groupContext: null
-    readonly property var backgroundOpacity: widgetData?.backgroundOpacity ?? null
-    readonly property string blurMode: widgetData?.blur ?? "inherit"
+    property var materialProfile: blurBarWindow?.surfaceProfile ?? SurfaceStyle.profile(SettingsData.surfaceProfiles, surfaceContext?.kind === "island" ? "island" : "bar")
+    property bool materialCovered: blurBarWindow?.ownsBarMaterial ?? (surfaceContext?.kind === "dock")
     property var blurBarWindow: null
     property real sectionAvailablePrimarySize: 0
     property bool isFirst: false
@@ -90,7 +91,7 @@ Loader {
     }
 
     Instantiator {
-        model: ["parentScreen", "section", "widgetThickness", "surfaceThickness", "surfaceOutlineThickness", "barThickness", "barSpacing", "barConfig", "groupContext", "backgroundOpacity", "blurMode", "blurBarWindow", "axis", "widgetData", "isFirst", "isLast", "sectionSpacing", "sectionAvailablePrimarySize", "isLeftBarEdge", "isRightBarEdge", "isTopBarEdge", "isBottomBarEdge", "crossEdgeExtension", "segmentRole", "surfaceContext", "hostContext", "allottedPrimarySize"]
+        model: ["parentScreen", "section", "widgetThickness", "surfaceThickness", "surfaceOutlineThickness", "barThickness", "barSpacing", "barConfig", "groupContext", "materialProfile", "materialCovered", "blurBarWindow", "axis", "widgetData", "isFirst", "isLast", "sectionSpacing", "sectionAvailablePrimarySize", "isLeftBarEdge", "isRightBarEdge", "isTopBarEdge", "isBottomBarEdge", "crossEdgeExtension", "segmentRole", "surfaceContext", "hostContext", "allottedPrimarySize"]
         delegate: Binding {
             required property string modelData
             target: root.item

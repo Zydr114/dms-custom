@@ -13,6 +13,8 @@ layout(std140, binding = 0) uniform buf {
     float cutoutRadius;
     vec4 cutout;        // inner cutout edges in px: x=left y=top z=right w=bottom
     vec4 surfaceColor;  // straight (non-premultiplied) rgba
+    vec4 highlightColor;
+    float lineWidth;
 } ubuf;
 
 float sdRoundBox(vec2 p, vec2 c, vec2 hs, float r) {
@@ -30,5 +32,9 @@ void main() {
     float fw = max(fwidth(d), 1e-4);
     float cov = 1.0 - smoothstep(-fw, fw, d);
     float a = ubuf.surfaceColor.a * cov * ubuf.qt_Opacity;
-    fragColor = vec4(ubuf.surfaceColor.rgb * a, a);
+    vec4 base = vec4(ubuf.surfaceColor.rgb * a, a);
+    float inner = 1.0 - smoothstep(-fw, fw, d + ubuf.lineWidth);
+    float light = mix(1.0, 0.2, qt_TexCoord0.y);
+    float highlightAlpha = max(0.0, cov - inner) * light * ubuf.highlightColor.a * ubuf.qt_Opacity;
+    fragColor = vec4(ubuf.highlightColor.rgb * highlightAlpha, highlightAlpha) + base * (1.0 - highlightAlpha);
 }
