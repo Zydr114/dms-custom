@@ -1,9 +1,52 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import vm from "node:vm";
 import test from "node:test";
 import { loadScript } from "./qml-script.mjs";
 
 const store = loadScript(new URL("../Common/settings/SettingsStore.js", import.meta.url));
+const spec = loadScript(new URL("../Common/settings/SettingsSpec.js", import.meta.url));
+const surface = loadScript(new URL("../Common/SurfaceStyle.js", import.meta.url));
 const plain = value => JSON.parse(JSON.stringify(value));
+
+function settingsData() {
+    const source = readFileSync(new URL("../Common/SettingsData.qml", import.meta.url), "utf8");
+    const context = vm.createContext({ SurfaceStyle: surface, Spec: spec, surfaceProfiles: surface.defaults(), _hooks: {}, saveSettings() {} });
+    context.root = context;
+    for (const name of ["set", "setSurfaceProfile", "applySurfaceProfileToAll", "resetSurfaceProfile"]) {
+        const match = source.match(new RegExp(`^    function ${name}\\([^)]*\\) \\{\\n[\\s\\S]*?^    \\}`, "m"));
+        assert.ok(match, `missing ${name}`);
+        vm.runInContext(match[0], context);
+    }
+    return context;
+}
+
+test("editing, copying and resetting profiles keeps categories independent", () => {
+    const settings = settingsData();
+    settings.setSurfaceProfile("bar", { opacity: 0.5, blur: true, highlight: 0.3 });
+    settings.setSurfaceProfile("island", { opacity: 0.2 });
+    settings.setSurfaceProfile("bar", { opacity: 2, foregroundOpacity: 0 });
+    assert.deepEqual(plain(settings.surfaceProfiles.bar), { opacity: 1, blur: true, highlight: 0.3, foregroundOpacity: 0 });
+    assert.equal(settings.surfaceProfiles.island.opacity, 0.2);
+    assert.equal(settings.surfaceProfiles.popup.opacity, 1);
+
+    settings.applySurfaceProfileToAll("bar");
+    for (const kind of ["island", "settings", "popup"])
+        assert.deepEqual(plain(settings.surfaceProfiles[kind]), plain(settings.surfaceProfiles.bar));
+    for (const kind of ["bar", "island", "settings", "popup"]) {
+        settings.surfaceProfiles[kind].opacity = 0.4;
+        for (const other of ["bar", "island", "settings", "popup"].filter(value => value !== kind))
+            assert.equal(settings.surfaceProfiles[other].opacity, 1);
+        settings.surfaceProfiles[kind].opacity = 1;
+    }
+    settings.surfaceProfiles.bar.opacity = 0.4;
+
+    settings.resetSurfaceProfile("settings");
+    assert.deepEqual(plain(settings.surfaceProfiles.settings), plain(surface.defaults().settings));
+    assert.equal(settings.surfaceProfiles.bar.opacity, 0.4);
+    assert.equal(settings.surfaceProfiles.island.blur, true);
+    assert.equal(settings.surfaceProfiles.popup.foregroundOpacity, 0);
+});
 
 test("v42 material migration preserves legacy data and resolves effective profiles", () => {
     const original = {

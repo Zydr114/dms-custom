@@ -20,13 +20,13 @@ Effective outlines reserve a minimum content face before growing; very thin bars
 
 Group primary size includes visible children, their outlines, internal gaps and both end insets. Flexible media/window-title sizes and the overflow trigger use matching budgets. Hidden children contribute no gaps; an empty group contributes no shell. Horizontal and vertical layouts share these rules, including section input bounds. Dock surfaces retain their separate sizing. Standard `PluginComponent` pills receive ordinary surface sizing and material parameters; custom plugin rendering must support the corresponding properties itself.
 
-## Independent opacity and blur
+## Material ownership
 
-The widget and group editors expose **Opacity** with an inheritance/override switch and a 0–100% slider, plus a separate blur choice. A widget inherits bar widget opacity; a group shell inherits bar surface opacity. Members can override their own fill opacity, while the group shell supplies their backdrop blur.
+Settings version 43 replaces local opacity/blur controls with four shared materials under **Appearance → Interface style**. Bar and group editors link to the relevant card. See [Background materials](background-blur-refactor.md) for all categories, migration and compositor limits.
 
-Blur is `inherit`, `on` or `off`. It does not force opacity to one when disabled or unavailable. Zero opacity with blur on permits an untinted blurred capsule; opaque fills do not register a blur region. The existing background visibility setting still controls whether an ordinary surface is shown.
+The outer owner paints the full material once. With the bar background enabled, groups and capsules add light tones. Without it, a group shell or individual capsule owns the material, with transparent group children. Overflow uses popup material. Existing background visibility, tone, state and outline controls remain independent.
 
-A local blur switch controls that surface's request. It cannot reverse blur from an underlying bar/frame surface. Overflow retains its existing popup backdrop policy. The bar's own blur setting remains under **Bar appearance → Surface → Background blur**.
+Blur and tint remain independent: zero opacity can request untinted blur, while opaque fills do not register a blur region. A Frame background owns connected surfaces. Local `blur` and `backgroundOpacity` fields in older configurations are preserved in the migration backup but no longer override these materials.
 
 ## Configuration compatibility
 
@@ -34,11 +34,10 @@ Members remain in the existing flat widget arrays. `groupId` refers to `barConfi
 
 ```json
 {
-  "blur": "off",
   "leftWidgets": [
-    { "id": "clock", "enabled": true, "blur": "on", "backgroundOpacity": 0.25 },
+    { "id": "clock", "enabled": true },
     { "id": "cpuUsage", "enabled": true, "groupId": "performance" },
-    { "id": "memUsage", "enabled": true, "groupId": "performance", "backgroundOpacity": 0.8 }
+    { "id": "memUsage", "enabled": true, "groupId": "performance" }
   ],
   "widgetGroups": {
     "performance": {
@@ -47,16 +46,12 @@ Members remain in the existing flat widget arrays. `groupId` refers to `barConfi
       "padding": 4,
       "spacing": 3,
       "tone": "surface",
-      "blur": "on",
-      "backgroundOpacity": 0.35,
       "overflowMode": "auto"
     }
   }
 }
 ```
 
-- `backgroundOpacity`: absent or `null` inherits; a finite number is constrained to 0–1.
-- `blur`: unknown values inherit. Group members use group blur while grouped and retain their own choice for when moved out.
 - `style`: `pills` or `segments`, independent of bar style.
 - `tone`: `surface` or `primary`.
 - `padding` and `spacing`: logical pixels, bounded by Theme tokens and snapped to screen scale.
@@ -66,7 +61,7 @@ Invalid group references fall back to ordinary presentation. Separate runs of th
 
 ## Lifetime and validation
 
-Blur uses the compositor's `ext-background-effect-v1` support and the existing window region registry. Each group registers one rounded region, with no duplicate child regions. Hidden, opaque and destroyed surfaces unregister. A local request can trigger the existing one-shot capability probe even when global/bar blur is off. Geometry refreshes reach the window registry, and null geometry during Island teardown is guarded.
+Blur uses the compositor's `ext-background-effect-v1` support and the existing window region registry. Each uncovered group registers one rounded region, with no duplicate child regions; covered groups use their bar's region. Hidden, opaque and destroyed surfaces unregister. Any material can trigger the existing one-shot capability probe. Geometry refreshes reach the window registry, and null geometry during Island teardown is guarded.
 
 No periodic timer, daemon, dependency or socket change was added. Existing event-driven layout and blur rebuilds are reused. Group surfaces retain their instances while the count is stable. Tree editors load only when selected; inherited DReorderList autoscroll runs only during an active drag. This source audit does not measure compositor GPU cost.
 
