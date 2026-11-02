@@ -391,8 +391,27 @@ Item {
     Loader {
         anchors.fill: island
         z: island.z - 1
-        active: root.shadowEnabled && !root.materialCovered
+        active: root.shadowEnabled && !root.materialCovered && !root.notch
         sourceComponent: shadowComponent
+    }
+
+    Loader {
+        anchors.fill: island
+        z: island.z - 1
+        active: root.notch && !root.materialCovered
+        sourceComponent: GothicSurface {
+            edge: root.controller.edge
+            alongRadius: root.joinRadius
+            crossRadius: root.joinCrossRadius
+            farRadii: root.notchFarRadii
+            fillColor: root.effectiveSurfaceColor
+            borderColor: island.border.color
+            borderWidth: root.notificationAccentColor !== "transparent" || root.highContrast ? Theme.outlineWidthFocused : 0
+            highlight: root.materialProfile.highlight
+            shadowEnabled: root.shadowEnabled
+            shadowDirection: root.effectiveShadowDirection
+            reducedMotion: root.reducedMotion
+        }
     }
 
     MorphSurface {
@@ -404,8 +423,8 @@ Item {
         width: root.currentVisualWidth
         height: root.currentVisualHeight
         // A covered island paints only the overhang, keeping the band from receiving two translucent fills.
-        color: root.materialCovered ? "transparent" : root.effectiveSurfaceColor
-        border.width: root.notificationAccentColor !== "transparent" ? Theme.outlineWidthFocused : root.materialCovered ? 0 : root.highContrast ? Theme.outlineWidthFocused : root.borderlessMedia || root.notch ? 0 : Theme.outlineWidth
+        color: root.materialCovered || root.notch ? "transparent" : root.effectiveSurfaceColor
+        border.width: root.notch ? 0 : root.notificationAccentColor !== "transparent" ? Theme.outlineWidthFocused : root.materialCovered ? 0 : root.highContrast ? Theme.outlineWidthFocused : root.borderlessMedia ? 0 : Theme.outlineWidth
         border.color: root.notificationAccentColor !== "transparent" ? root.notificationAccentColor : root.highContrast ? Theme.outlineStrong : Theme.outlineLight
 
         Behavior on color {
@@ -424,7 +443,7 @@ Item {
 
         SurfaceHighlight {
             anchors.fill: parent
-            visible: !root.materialCovered && root.materialProfile.highlight > 0
+            visible: !root.materialCovered && !root.notch && root.materialProfile.highlight > 0
             strength: root.materialProfile.highlight
             topLeftRadius: island.topLeftRadius
             topRightRadius: island.topRightRadius
@@ -553,22 +572,35 @@ Item {
     // crossExtent is the band here, so the overhang is how far the sheet has left the bar.
     readonly property real embeddedOverhang: !root.materialCovered || !root.embedded || root.chromeless ? 0 : Math.max(0, root.farEdge ? -(root.isVertical ? root.currentVisualX : root.currentVisualY) : (root.isVertical ? root.currentVisualX + root.currentVisualWidth : root.currentVisualY + root.currentVisualHeight) - root.crossExtent)
     readonly property real joinRadius: root.notch ? root.notchRadius : Math.min(Theme.connectedCornerRadius, root.embeddedOverhang)
+    readonly property point notchFarRadii: {
+        let start = motion.currentBottomLeftRadius;
+        let end = motion.currentBottomRightRadius;
+        switch (root.controller.edge) {
+        case "bottom":
+            start = motion.currentTopLeftRadius;
+            end = motion.currentTopRightRadius;
+            break;
+        case "left":
+            start = motion.currentTopRightRadius;
+            break;
+        case "right":
+            start = motion.currentTopLeftRadius;
+            end = motion.currentBottomLeftRadius;
+            break;
+        }
+        const limit = Math.max(0, Math.min(root.currentVisualWidth, root.currentVisualHeight) / 2);
+        return Qt.point(Math.max(0, Math.min(start, limit)), Math.max(0, Math.min(end, limit)));
+    }
     // Depth is capped so the flare never passes the pill's far corner; the slider still drives the along radius.
-    readonly property real joinCrossRadius: root.notch ? Math.max(0, Math.min(root.joinRadius, root.controller.compactFaceThickness - Math.min(root.controller.compactFaceThickness / 2, root.controller.pillRadius))) : root.joinRadius
+    readonly property real joinCrossRadius: root.notch ? Math.max(0, Math.min(root.joinRadius, root.controller.compactFaceThickness - Math.min(root.controller.compactFaceThickness / 2, root.controller.pillRadius), root.currentVisualCross - Math.max(root.notchFarRadii.x, root.notchFarRadii.y))) : root.joinRadius
     // Where the join corners sit: the band's inner edge when embedded, the screen edge for a notch.
     readonly property real joinCross: root.notch === root.farEdge ? root.crossExtent : 0
-    readonly property var joinCorners: joinChrome.item ? [joinChrome.item.leadingCorner, joinChrome.item.trailingCorner] : []
-
-    // A Loader, not visible:, so islands and dots skip these per-frame motion bindings.
     Loader {
         id: joinChrome
 
-        active: (root.materialCovered && root.embedded && !root.chromeless) || root.notch
+        active: root.materialCovered && root.embedded && !root.chromeless
         z: island.z - 1
         sourceComponent: Item {
-            readonly property alias leadingCorner: leadingCorner
-            readonly property alias trailingCorner: trailingCorner
-
             Loader {
                 active: root.embedded
                 sourceComponent: Item {

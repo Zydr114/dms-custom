@@ -383,29 +383,14 @@ Item {
     }
 
     Component {
-        id: blurIslandJoinRegionComp
+        id: blurGothicIslandRegionComp
 
-        Region {
-            id: joinRegion
-
-            property Item corner
-
-            readonly property real sx: topBarMouseArea.x + islandLoader.x + topBarSlide.x
-            readonly property real sy: topBarMouseArea.y + islandLoader.y + topBarSlide.y
-
-            x: sx + (corner?.x ?? 0)
-            y: sy + (corner?.y ?? 0)
-            width: corner?.width ?? 0
-            height: corner?.height ?? 0
-
-            Region {
-                intersection: Intersection.Subtract
-                shape: RegionShape.Ellipse
-                x: joinRegion.x + (joinRegion.corner?.discRect.x ?? 0)
-                y: joinRegion.y + (joinRegion.corner?.discRect.y ?? 0)
-                width: joinRegion.corner?.discRect.width ?? 0
-                height: joinRegion.corner?.discRect.height ?? 0
-            }
+        GothicBlurRegion {
+            bodyRect: Qt.rect(topBarMouseArea.x + islandLoader.x + topBarSlide.x + (barWindow.islandHost?.currentVisualX ?? 0), topBarMouseArea.y + islandLoader.y + topBarSlide.y + (barWindow.islandHost?.currentVisualY ?? 0), barWindow.islandHost?.currentVisualWidth ?? 0, barWindow.islandHost?.currentVisualHeight ?? 0)
+            edge: barWindow.islandHost?.edge ?? "top"
+            alongRadius: barWindow.islandHost?.surface.joinRadius ?? 0
+            crossRadius: barWindow.islandHost?.surface.joinCrossRadius ?? 0
+            farRadii: barWindow.islandHost?.surface.notchFarRadii ?? Qt.point(0, 0)
         }
     }
 
@@ -531,16 +516,9 @@ Item {
 
             const subRegions = [];
             if (islandTranslucent) {
-                const islandSub = blurIslandRegionComp.createObject(region);
+                const islandSub = (islandNotch ? blurGothicIslandRegionComp : blurIslandRegionComp).createObject(region);
                 if (islandSub)
                     subRegions.push(islandSub);
-                for (const corner of barWindow.islandHost.notch ? barWindow.islandHost.surface.joinCorners : []) {
-                    const sub = blurIslandJoinRegionComp.createObject(region, {
-                        corner: corner
-                    });
-                    if (sub)
-                        subRegions.push(sub);
-                }
             }
             if (satelliteTranslucent) {
                 for (const surface of [leadingSatelliteSurface, trailingSatelliteSurface]) {
